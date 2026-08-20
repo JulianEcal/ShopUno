@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Http\Requests\Admin;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class RejectRegistrationRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true; // gated by the 'admin' middleware at the route level
+    }
+
+    public function rules(): array
+    {
+        return [
+            'reason' => ['required', 'string', 'max:500'],
+        ];
+    }
+}

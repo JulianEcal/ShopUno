@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopUno — The corner market, now open in every pocket</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/landing.css">
+</head>
+<body class="landing-page">
+
+<!-- ==========================================================
+     FLOATING NAV
+     #navAuthSlot is swapped for a "Go to dashboard" link by landing.js
+     if the visitor already has a session. Category links, cart, and
+     account all route through login.html since none of that is public.
+     ========================================================== -->
+<header class="floatnav" id="floatnav">
+  <div class="fn-inner">
+    <a href="/index.html" class="fn-logo">
+      <span class="fn-seal" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M4.5 8.5h15l-1.4 10.3a2 2 0 0 1-2 1.7H7.9a2 2 0 0 1-2-1.7L4.5 8.5Z"/>
+          <path d="M8.5 8.5V6.8a3.5 3.5 0 0 1 7 0v1.7"/>
+          <path d="M9 12v3M15 12v3"/>
+        </svg>
+      </span>
+      ShopUno
+    </a>
+
+    <nav class="fn-links">
+      <a href="#categories" class="fn-link">Categories</a>
+      <a href="#products" class="fn-link">Browse</a>
+      <a href="#announcements" class="fn-link">Announcements</a>
+      <a href="#sell" class="fn-link">Sell</a>
+    </nav>
+
+    <div class="fn-actions" id="navAuthSlot">
+      <a href="/login.html" class="fn-btn">Sign In</a>
+      <a href="/login.html#signup" class="fn-btn is-primary">Sign Up</a>
+    </div>
+  </div>
+</header>
+
+<!-- ---------- hero ---------- -->
+<section class="hero">
+  <div class="wrap hero-inner">
+    <div data-reveal>
+      <div class="eyebrow"><span class="stamp"></span> Every stall, one storefront</div>
+      <h1>The corner market,<br> now open in <em>every</em> pocket.</h1>
+      <p class="lede">From weekend flea-market finds to next-day electronics — ShopUno bundles thousands of small sellers into one stall you can browse before your coffee gets cold.</p>
+      <div class="hero-actions">
+        <a href="#products" class="btn-primary">
+          Start browsing
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#sell" class="btn-ghost-link">Become a seller</a>
+      </div>
+      <div class="hero-stats">
+        <div><strong id="statProducts">—</strong><span>Items listed</span></div>
+        <div><strong id="statCategories">—</strong><span>Categories</span></div>
+        <div><strong>One login</strong><span>Buy, sell, or deliver</span></div>
+      </div>
+    </div>
+
+    <div class="collage" data-reveal aria-hidden="true">
+      <div class="collage-card c1">
+        <div class="product-thumb" style="height:120px;border-radius:10px;margin-bottom:8px;">🛒</div>
+        <div class="cc-title">Fresh from local stalls</div>
+      </div>
+      <div class="collage-card c2">
+        <div class="product-thumb" style="height:120px;border-radius:10px;margin-bottom:8px;background:rgba(251,247,238,.15);color:var(--paper);">📦</div>
+        <div class="cc-title">Delivered by ShopUno couriers</div>
+      </div>
+      <div class="collage-card c3">
+        <div class="product-thumb" style="height:120px;border-radius:10px;margin-bottom:8px;">⭐</div>
+        <div class="cc-title">Rated by real buyers</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- categories (live) ---------- -->
+<section class="section" id="categories">
+  <div class="wrap" data-reveal>
+    <div class="section-head">
+      <div>
+        <h2>Shop by category</h2>
+        <p>Sign in to filter, search, and add to cart.</p>
+      </div>
+    </div>
+    <nav class="cat-scroller" id="catScroller" aria-label="Product categories">
+      <p class="state-msg">Loading categories…</p>
+    </nav>
+  </div>
+</section>
+
+<!-- ---------- products (live) ---------- -->
+<section class="section" id="products">
+  <div class="wrap" data-reveal>
+    <div class="section-head">
+      <div>
+        <h2>Fresh on ShopUno</h2>
+        <p>A peek at what local sellers have listed.</p>
+      </div>
+      <a href="/login.html" class="section-link">Sign in to see more →</a>
+    </div>
+    <div class="product-grid" id="productGrid">
+      <p class="state-msg">Loading products…</p>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- announcements (live, hidden if empty) ---------- -->
+<section class="announce-section" id="announceSection" hidden>
+  <div class="wrap" data-reveal>
+    <div class="section-head">
+      <div>
+        <h2>Platform announcements</h2>
+        <p>What's new across ShopUno.</p>
+      </div>
+    </div>
+    <div class="announce-list" id="announceList"></div>
+  </div>
+</section>
+
+<!-- ---------- sell CTA ---------- -->
+<section class="sell-cta" id="sell">
+  <div class="wrap">
+    <div class="ticket" data-reveal>
+      <div class="ticket-left">
+        <div class="eyebrow" style="color:var(--paper);opacity:.8;">For sellers</div>
+        <h2>Turn your stall into a storefront that never closes.</h2>
+        <p>Every ShopUno account starts as a buyer — apply to sell (or deliver) from your dashboard once you're signed up.</p>
+        <a href="/login.html#signup" class="btn-light">
+          Create your account
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+      <div class="ticket-right">
+        <div class="big-num">3</div>
+        <div class="big-label">Ways in — buyer, seller, or courier</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-about">
+        <a href="/index.html" class="fn-logo">
+          <span class="fn-seal" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M4.5 8.5h15l-1.4 10.3a2 2 0 0 1-2 1.7H7.9a2 2 0 0 1-2-1.7L4.5 8.5Z"/>
+              <path d="M8.5 8.5V6.8a3.5 3.5 0 0 1 7 0v1.7"/>
+              <path d="M9 12v3M15 12v3"/>
+            </svg>
+          </span>
+          ShopUno
+        </a>
+        <p>A marketplace built from thousands of small stalls — under one roof, one login, one delivery network.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 ShopUno. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+<script type="module" src="assets/js/pages/landing.js"></script>
+</body>
+</html>

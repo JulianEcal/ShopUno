@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In · ShopUno</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/login.css">
+</head>
+<body class="login-page">
+
+  <main class="login-wrap">
+    <div class="auth-container" id="authContainer">
+
+      <!-- ===================== SIGN IN ===================== -->
+      <section class="form-panel sign-in-panel" aria-label="Sign in">
+        <form id="loginForm" class="auth-form" novalidate>
+
+          <div class="brand-mark">
+            <span class="brand-seal" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M4.5 8.5h15l-1.4 10.3a2 2 0 0 1-2 1.7H7.9a2 2 0 0 1-2-1.7L4.5 8.5Z"/>
+                <path d="M8.5 8.5V6.8a3.5 3.5 0 0 1 7 0v1.7"/>
+                <path d="M9 12v3M15 12v3"/>
+              </svg>
+            </span>
+            <span class="brand-word">ShopUno</span>
+          </div>
+
+          <span class="eyebrow"><span class="stamp"></span>Welcome back</span>
+          <h1>Sign in to <em>ShopUno</em></h1>
+          <p class="auth-sub">One account, every stall — buyers, sellers, couriers, and admins all sign in here.</p>
+
+          <div class="stall-ticker" aria-hidden="true">
+            <div class="stall-ticker-track">
+              <span>Fresh Produce</span><span class="dot">•</span>
+              <span>Seafood</span><span class="dot">•</span>
+              <span>Bakery &amp; Pastries</span><span class="dot">•</span>
+              <span>Sari-Sari Goods</span><span class="dot">•</span>
+              <span>Textiles</span><span class="dot">•</span>
+              <span>Flowers</span><span class="dot">•</span>
+              <span>Street Eats</span><span class="dot">•</span>
+              <span>Handicrafts</span><span class="dot">•</span>
+              <span>Electronics</span><span class="dot">•</span>
+              <!-- duplicate set for seamless loop -->
+              <span>Fresh Produce</span><span class="dot">•</span>
+              <span>Seafood</span><span class="dot">•</span>
+              <span>Bakery &amp; Pastries</span><span class="dot">•</span>
+              <span>Sari-Sari Goods</span><span class="dot">•</span>
+              <span>Textiles</span><span class="dot">•</span>
+              <span>Flowers</span><span class="dot">•</span>
+              <span>Street Eats</span><span class="dot">•</span>
+              <span>Handicrafts</span><span class="dot">•</span>
+              <span>Electronics</span><span class="dot">•</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" autocomplete="email" required placeholder="you@email.com">
+          </div>
+
+          <div class="field-group">
+            <label for="password">Password</label>
+            <div class="password-field">
+              <input type="password" id="password" name="password" autocomplete="current-password" required placeholder="••••••••">
+              <button type="button" class="toggle-password" data-target="password" aria-label="Show password">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-error" id="loginError" role="alert" hidden></div>
+
+          <button type="submit" class="btn-primary" id="loginSubmit">
+            <span class="btn-label">Sign In</span>
+            <span class="btn-spinner" aria-hidden="true"></span>
+          </button>
+
+          <div class="auth-foot">
+            <a href="#" class="forgot-link">Forgot password?</a>
+          </div>
+
+          <p class="mobile-toggle">Don't have an account?
+            <button type="button" class="link-btn" data-toggle="signup">Create one now</button>
+          </p>
+
+          <div class="ticket-stub">
+            <div class="stub-cap">One login, three ways in · est. 2026</div>
+            <div class="stat-stub">
+              <div class="stat-stub-item">
+                <span class="stat-num">Shop</span>
+                <span class="stat-label">Buyer</span>
+              </div>
+              <div class="stat-stub-item">
+                <span class="stat-num">Sell</span>
+                <span class="stat-label">Seller</span>
+              </div>
+              <div class="stat-stub-item">
+                <span class="stat-num">Deliver</span>
+                <span class="stat-label">Courier</span>
+              </div>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- ===================== SIGN UP (4-step buyer wizard) ===================== -->
+      <section class="form-panel sign-up-panel" aria-label="Create account">
+
+        <!-- ---------- wizard form ---------- -->
+        <form id="signupForm" class="auth-form wizard-form" novalidate>
+
+          <div class="brand-mark">
+            <span class="brand-seal" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M4.5 8.5h15l-1.4 10.3a2 2 0 0 1-2 1.7H7.9a2 2 0 0 1-2-1.7L4.5 8.5Z"/>
+                <path d="M8.5 8.5V6.8a3.5 3.5 0 0 1 7 0v1.7"/>
+                <path d="M9 12v3M15 12v3"/>
+              </svg>
+            </span>
+            <span class="brand-word">ShopUno</span>
+          </div>
+
+          <span class="eyebrow"><span class="stamp"></span>New here</span>
+          <h1>Create your <em>ShopUno</em> account</h1>
+          <p class="auth-sub">Every account starts as a Buyer. You can apply to sell or deliver later from your dashboard.</p>
+
+          <!-- step tracker -->
+          <ol class="wizard-steps" id="wizardSteps" aria-label="Sign-up progress">
+            <li class="wizard-step is-active" data-step="1">
+              <span class="wizard-step-num">01</span>
+              <span class="wizard-step-label">Account</span>
+            </li>
+            <li class="wizard-step" data-step="2">
+              <span class="wizard-step-num">02</span>
+              <span class="wizard-step-label">Details</span>
+            </li>
+            <li class="wizard-step" data-step="3">
+              <span class="wizard-step-num">03</span>
+              <span class="wizard-step-label">Address</span>
+            </li>
+            <li class="wizard-step" data-step="4">
+              <span class="wizard-step-num">04</span>
+              <span class="wizard-step-label">Verify</span>
+            </li>
+          </ol>
+
+          <div class="form-error" id="signupError" role="alert" hidden></div>
+
+          <!-- ===== Step 1 — Account ===== -->
+          <fieldset class="wizard-panel is-active" id="wizardPanel1" data-panel="1">
+            <legend class="sr-only">Account</legend>
+
+            <div class="field-group">
+              <label for="signupEmail">Email address</label>
+              <input type="email" id="signupEmail" name="email" autocomplete="email" required placeholder="you@email.com">
+            </div>
+
+            <div class="field-group">
+              <label for="signupPassword">Password</label>
+              <div class="password-field">
+                <input type="password" id="signupPassword" name="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters">
+                <button type="button" class="toggle-password" data-target="signupPassword" aria-label="Show password">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="signupConfirm">Confirm password</label>
+              <div class="password-field">
+                <input type="password" id="signupConfirm" name="confirm" autocomplete="new-password" required minlength="8" placeholder="Type it again">
+                <button type="button" class="toggle-password" data-target="signupConfirm" aria-label="Show password">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- ===== Step 2 — Personal info ===== -->
+          <fieldset class="wizard-panel" id="wizardPanel2" data-panel="2">
+            <legend class="sr-only">Personal information</legend>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="lastName">Last name</label>
+                <input type="text" id="lastName" name="lastName" autocomplete="family-name" required placeholder="Dela Cruz">
+              </div>
+              <div class="field-group">
+                <label for="firstName">First name</label>
+                <input type="text" id="firstName" name="firstName" autocomplete="given-name" required placeholder="Juan">
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group field-group-sm">
+                <label for="middleInitial">Middle initial</label>
+                <input type="text" id="middleInitial" name="middleInitial" maxlength="3" placeholder="S.">
+              </div>
+              <div class="field-group">
+                <label for="sex">Sex</label>
+                <select id="sex" name="sex" required>
+                  <option value="" selected disabled>Select</option>
+                  <option value="female">Female</option>
+                  <option value="male">Male</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="birthday">Birthday</label>
+                <input type="date" id="birthday" name="birthday" required>
+              </div>
+              <div class="field-group field-group-sm">
+                <label for="ageDisplay">Age</label>
+                <input type="text" id="ageDisplay" name="ageDisplay" readonly placeholder="—" tabindex="-1">
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="contactNo">Mobile number</label>
+              <input type="tel" id="contactNo" name="contactNo" autocomplete="tel" required placeholder="09XX XXX XXXX">
+            </div>
+          </fieldset>
+
+          <!-- ===== Step 3 — Address ===== -->
+          <fieldset class="wizard-panel" id="wizardPanel3" data-panel="3">
+            <legend class="sr-only">Address</legend>
+
+            <div class="field-group">
+              <label for="region">Region</label>
+              <select id="region" name="region" required disabled>
+                <option value="" selected>Loading regions…</option>
+              </select>
+            </div>
+
+            <div class="field-group" id="provinceGroup">
+              <label for="province">Province</label>
+              <select id="province" name="province" required disabled>
+                <option value="" selected>Select region first</option>
+              </select>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="municipality">Municipality / City</label>
+                <select id="municipality" name="municipality" required disabled>
+                  <option value="" selected>Select region first</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label for="barangay">Barangay</label>
+                <select id="barangay" name="barangay" required disabled>
+                  <option value="" selected>Select municipality first</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="street">Street</label>
+                <input type="text" id="street" name="street" autocomplete="address-line1" required placeholder="Rizal St.">
+              </div>
+              <div class="field-group field-group-sm">
+                <label for="houseNumber">House no.</label>
+                <input type="text" id="houseNumber" name="houseNumber" autocomplete="address-line2" required placeholder="123">
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- ===== Step 4 — Verification ===== -->
+          <fieldset class="wizard-panel" id="wizardPanel4" data-panel="4">
+            <legend class="sr-only">Verification</legend>
+
+            <div class="field-group">
+              <label for="idType">Valid ID type</label>
+              <select id="idType" name="idType" required>
+                <option value="" selected disabled>Select ID type</option>
+                <option value="national_id">Philippine National ID</option>
+                <option value="drivers_license">Driver's License</option>
+                <option value="passport">Passport</option>
+                <option value="umid">UMID</option>
+                <option value="voters_id">Voter's ID</option>
+                <option value="postal_id">Postal ID</option>
+              </select>
+            </div>
+
+            <div class="field-group">
+              <label for="idUpload">Upload ID</label>
+              <div class="file-drop" id="fileDrop">
+                <input type="file" id="idUpload" name="idUpload" accept="image/png,image/jpeg,application/pdf" required>
+                <div class="file-drop-inner" id="fileDropInner">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+                  <span>Tap to upload a clear photo or scan</span>
+                  <span class="file-drop-hint">JPG, PNG, or PDF · max 5MB</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="wizard-summary" id="wizardSummary" aria-label="Review your details"></div>
+          </fieldset>
+
+          <!-- nav row -->
+          <div class="wizard-nav">
+            <button type="button" class="btn-outline-wizard" id="wizardBack" hidden>Back</button>
+            <button type="button" class="btn-primary wizard-continue" id="wizardContinue">
+              <span class="btn-label">Continue</span>
+            </button>
+            <button type="submit" class="btn-primary wizard-submit" id="signupSubmit" hidden>
+              <span class="btn-label">Create Account</span>
+              <span class="btn-spinner" aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <p class="mobile-toggle">Already have an account?
+            <button type="button" class="link-btn" data-toggle="signin">Sign in</button>
+          </p>
+        </form>
+
+        <!-- ---------- pending approval state (shown after successful submit) ---------- -->
+        <div class="auth-form pending-panel" id="pendingPanel" hidden>
+          <div class="brand-mark">
+            <span class="brand-seal" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M4.5 8.5h15l-1.4 10.3a2 2 0 0 1-2 1.7H7.9a2 2 0 0 1-2-1.7L4.5 8.5Z"/>
+                <path d="M8.5 8.5V6.8a3.5 3.5 0 0 1 7 0v1.7"/>
+                <path d="M9 12v3M15 12v3"/>
+              </svg>
+            </span>
+            <span class="brand-word">ShopUno</span>
+          </div>
+
+          <div class="pending-seal" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 7v5l3.5 2"/>
+            </svg>
+          </div>
+
+          <span class="eyebrow"><span class="stamp"></span>Application received</span>
+          <h1>You're on the <em>waitlist</em></h1>
+          <p class="auth-sub pending-copy">
+            Thanks, <span id="pendingName">friend</span> — your buyer application is in for review.
+            We'll email <strong id="pendingEmail"></strong> once an admin approves your account, usually within 1–2 business days.
+          </p>
+
+          <div class="ticket-stub">
+            <div class="stub-cap">What happens next · est. 2026</div>
+            <div class="pending-checklist">
+              <div class="pending-checklist-item is-done"><span class="pc-dot"></span>Application submitted</div>
+              <div class="pending-checklist-item"><span class="pc-dot"></span>Admin reviews your ID &amp; details</div>
+              <div class="pending-checklist-item"><span class="pc-dot"></span>Approval email sent — you can sign in</div>
+            </div>
+          </div>
+
+          <button type="button" class="btn-ghost pending-back" data-toggle="signin">Back to sign in</button>
+        </div>
+      </section>
+
+      <!-- ===================== SLIDING ACCENT OVERLAY ===================== -->
+      <div class="overlay-container" aria-hidden="true">
+        <div class="overlay">
+          <div class="overlay-panel overlay-left">
+            <div class="overlay-seal">est.<br>2026</div>
+            <p class="overlay-eyebrow">Already a member?</p>
+            <h2>One account,<br>every stall.</h2>
+            <p class="overlay-copy">Sign back in to pick up right where you left off — your cart, your orders, your stalls.</p>
+            <button type="button" class="btn-ghost" data-toggle="signin">Sign In</button>
+          </div>
+          <div class="overlay-panel overlay-right">
+            <div class="overlay-seal">est.<br>2026</div>
+            <p class="overlay-eyebrow">New to ShopUno?</p>
+            <h2>The whole<br>market, one login.</h2>
+            <p class="overlay-copy">Create an account to start shopping, selling, or delivering — however you show up.</p>
+            <button type="button" class="btn-ghost" data-toggle="signup">Create Account</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module" src="assets/js/pages/login.js"></script>
+</body>
+</html>
