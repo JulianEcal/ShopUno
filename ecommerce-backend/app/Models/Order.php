@@ -10,8 +10,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Order extends Model
 {
     protected $fillable = [
-        'buyer_id', 'seller_id', 'subtotal', 'discount', 'total', 'status',
-        'payment_method', 'is_paid', 'paid_at',
+        'buyer_id', 'seller_id', 'voucher_id', 'logistics_company_id', 'subtotal', 'discount', 'total', 'status',
+        'payment_method', 'is_paid', 'paid_at', 'waybill_number', 'waybill_generated_at',
+        'shipping_address_id', 'shipping_label', 'shipping_recipient_name', 'shipping_recipient_phone',
+        'shipping_province', 'shipping_municipality', 'shipping_barangay', 'shipping_street', 'shipping_house_number',
     ];
 
     protected $casts = [
@@ -20,10 +22,8 @@ class Order extends Model
         'total' => 'decimal:2',
         'is_paid' => 'boolean',
         'paid_at' => 'datetime',
+        'waybill_generated_at' => 'datetime',
     ];
-
-    /** Statuses in the order they normally progress through. Used to validate transitions. */
-    public const STATUS_SEQUENCE = ['to_ship', 'in_transit', 'out_for_delivery', 'delivered'];
 
     public function buyer(): BelongsTo
     {
@@ -33,6 +33,30 @@ class Order extends Model
     public function seller(): BelongsTo
     {
         return $this->belongsTo(Seller::class);
+    }
+
+    /** The voucher (if any) whose discount this order's 'discount' column
+     * came from — see the voucher_id migration for why this exists
+     * (per-buyer usage limits need real order history, not just a counter). */
+    public function voucher(): BelongsTo
+    {
+        return $this->belongsTo(Voucher::class);
+    }
+
+    public function logisticsCompany(): BelongsTo
+    {
+        return $this->belongsTo(LogisticsCompany::class);
+    }
+
+    /** One-line shipping address, built from this order's own snapshot
+     * (never the buyer's current/live address — see the migration note on
+     * shipping_address_id for why those must never be confused). */
+    public function shippingLine(): string
+    {
+        return collect([
+            $this->shipping_house_number, $this->shipping_street, $this->shipping_barangay,
+            $this->shipping_municipality, $this->shipping_province,
+        ])->filter()->implode(', ');
     }
 
     public function items(): HasMany

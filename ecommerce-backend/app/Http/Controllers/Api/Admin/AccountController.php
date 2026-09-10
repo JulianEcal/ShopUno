@@ -23,7 +23,7 @@ class AccountController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = User::query()
-            ->with(['address', 'seller', 'courier'])
+            ->with(['address', 'seller', 'courier.logisticsCompany', 'logisticsCompany'])
             ->where('role', '!=', 'admin')
             ->where('status', '!=', 'pending');
 
@@ -43,9 +43,9 @@ class AccountController extends Controller
             });
         }
 
-        return response()->json([
-            'data' => UserResource::collection($query->latest()->paginate(20)),
-        ]);
+        $users = $query->latest()->paginate(20);
+
+        return $this->paginatedResponse(UserResource::collection($users), $users);
     }
 
     public function show(User $user): JsonResponse
@@ -53,7 +53,7 @@ class AccountController extends Controller
         $this->ensureManageable($user);
 
         return response()->json([
-            'user' => new UserResource($user->load(['address', 'seller', 'courier'])),
+            'user' => new UserResource($user->load(['address', 'seller', 'courier.logisticsCompany', 'logisticsCompany'])),
             'moderation_log' => $user->moderationLogs()->with('admin:id,first_name,last_name')->latest()->get(),
         ]);
     }

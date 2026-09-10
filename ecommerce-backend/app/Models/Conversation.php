@@ -10,11 +10,23 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Conversation extends Model
 {
-    protected $fillable = ['order_id'];
+    protected $fillable = ['order_id', 'product_id', 'product_variation_id'];
 
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    /** The product this conversation started from (e.g. "Message" from a product's quick-view), if any. */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    /** The specific variant (e.g. "Small / Jersey Only") this conversation started from, if the buyer had one selected. */
+    public function productVariation(): BelongsTo
+    {
+        return $this->belongsTo(ProductVariation::class);
     }
 
     public function participants(): BelongsToMany

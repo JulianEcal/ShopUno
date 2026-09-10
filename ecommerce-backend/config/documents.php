@@ -9,6 +9,11 @@ return [
 
     // Drives both the Form Request validation messages AND the
     // GET /document-requirements guide shown to users before they upload.
+    //
+    // 'seller' here describes the seller APPLICATION (POST /me/seller-application),
+    // not a registration — an existing Buyer already has a valid ID on file,
+    // so only the business permit is needed again. 'logistics' is a direct
+    // registration type, same shape the old seller registration used to have.
     'requirements' => [
         'buyer' => [
             [
@@ -19,6 +24,13 @@ return [
         ],
         'seller' => [
             [
+                'field' => 'business_permit',
+                'label' => 'Business Permit',
+                'description' => 'Your current Mayor\'s/Business Permit or DTI registration. Make sure the business name and expiry date are visible.',
+            ],
+        ],
+        'logistics' => [
+            [
                 'field' => 'upload_id',
                 'label' => 'Valid ID',
                 'description' => 'A government-issued ID showing your full name and a clear photo.',
@@ -26,7 +38,7 @@ return [
             [
                 'field' => 'business_permit',
                 'label' => 'Business Permit',
-                'description' => 'Your current Mayor\'s/Business Permit or DTI registration. Make sure the business name and expiry date are visible.',
+                'description' => 'Your current Mayor\'s/Business Permit or DTI registration for the logistics company.',
             ],
         ],
         'courier' => [

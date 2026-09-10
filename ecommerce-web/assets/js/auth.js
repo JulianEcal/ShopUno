@@ -8,7 +8,26 @@ export async function login(email, password) {
   const data = await api.post("/login", { email, password });
   setToken(data.token);
   setStoredUser(data.user);
+  // Dual-access accounts (buyer+seller) haven't picked a side yet right
+  // after login — login.js shows the picker and calls setActiveView()
+  // once they do. Single-role accounts have nothing to pick, so their
+  // view is just their role.
+  if (!data.user.dual_access) setActiveView(data.user.role);
   return data.user;
+}
+
+// Which side of a dual-access (buyer+seller) account is currently "in use".
+// Only meaningful when user.dual_access is true — everyone else's view is
+// just their role. Stored separately from the user object so switching
+// views never has to touch the token or re-fetch /me.
+const ACTIVE_VIEW_KEY = "active_view";
+
+export function getActiveView() {
+  return localStorage.getItem(ACTIVE_VIEW_KEY);
+}
+
+export function setActiveView(view) {
+  localStorage.setItem(ACTIVE_VIEW_KEY, view);
 }
 
 // The backend has no single generic /register route — it splits registration
@@ -49,5 +68,10 @@ export async function logout() {
 export function requireAuth() {
   if (!getToken()) {
     location.href = "/login.html";
+    // location.href is a navigation *request*, not an immediate stop — the
+    // rest of the calling module (initShell building the page around a user
+    // that doesn't exist) would otherwise keep running for the instant
+    // before the browser actually navigates away. Throwing halts it here.
+    throw new Error("Not authenticated");
   }
 }

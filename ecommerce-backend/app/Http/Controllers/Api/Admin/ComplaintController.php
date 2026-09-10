@@ -26,9 +26,9 @@ class ComplaintController extends Controller
             $query->where('subject', 'like', "%{$search}%");
         }
 
-        return response()->json([
-            'data' => ComplaintResource::collection($query->latest()->paginate(20)),
-        ]);
+        $complaints = $query->latest()->paginate(20);
+
+        return $this->paginatedResponse(ComplaintResource::collection($complaints), $complaints);
     }
 
     public function show(Complaint $complaint): JsonResponse

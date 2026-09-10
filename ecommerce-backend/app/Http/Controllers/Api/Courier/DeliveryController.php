@@ -14,16 +14,25 @@ use Illuminate\Support\Facades\Mail;
 
 class DeliveryController extends Controller
 {
-    /** GET /courier/deliveries/available — unassigned, ready for any courier to accept. */
-    public function available(): JsonResponse
+    /**
+     * GET /courier/deliveries/available — pending AND scoped to this
+     * courier's own logistics company. Previously this showed every
+     * pending delivery platform-wide regardless of company — that no
+     * longer matches the model: a rider only ever sees and accepts work
+     * routed to the company they applied to and were approved by.
+     */
+    public function available(Request $request): JsonResponse
     {
+        $companyId = $request->user()->courier->logistics_company_id;
+
         $deliveries = Delivery::query()
             ->where('status', 'pending')
+            ->where('logistics_company_id', $companyId)
             ->with(['order.seller'])
             ->latest()
             ->paginate(20);
 
-        return response()->json(['data' => DeliveryResource::collection($deliveries)]);
+        return $this->paginatedResponse(DeliveryResource::collection($deliveries), $deliveries);
     }
 
     /** GET /courier/deliveries — this courier's own, accepted-through-delivered. */
@@ -35,7 +44,7 @@ class DeliveryController extends Controller
             ->latest()
             ->paginate(20);
 
-        return response()->json(['data' => DeliveryResource::collection($deliveries)]);
+        return $this->paginatedResponse(DeliveryResource::collection($deliveries), $deliveries);
     }
 
     public function show(Request $request, Delivery $delivery): JsonResponse
@@ -48,27 +57,38 @@ class DeliveryController extends Controller
     }
 
     /**
-     * POST /courier/deliveries/{id}/accept — first-come-first-served.
+     * POST /courier/deliveries/{id}/accept — first-come-first-served,
+     * scoped to the courier's own company.
      *
-     * The race condition this guards against: two couriers tap "accept" on
-     * the same delivery within the same second. lockForUpdate() makes the
-     * second request wait for the first transaction to finish, then re-check
-     * status — so it sees 'accepted' (not 'pending') and fails cleanly,
-     * instead of both couriers silently getting assigned the same delivery.
+     * Two things this guards against:
+     * 1. The race condition: two couriers tap "accept" on the same delivery
+     *    within the same second. lockForUpdate() makes the second request
+     *    wait for the first transaction to finish, then re-check status —
+     *    so it sees 'accepted' (not 'pending') and fails cleanly, instead
+     *    of both couriers silently getting assigned the same delivery.
+     * 2. Company mismatch: available() already filters by company, but
+     *    that's just what the UI shows — nothing stops a request hitting
+     *    this endpoint directly with a delivery ID from another company.
+     *    The check below is the real enforcement, not the filtered list.
      */
     public function accept(Request $request): JsonResponse
     {
         $deliveryId = $request->route('delivery');
+        $courier = $request->user()->courier;
 
-        $delivery = DB::transaction(function () use ($deliveryId, $request) {
+        $delivery = DB::transaction(function () use ($deliveryId, $courier, $request) {
             $delivery = Delivery::lockForUpdate()->findOrFail($deliveryId);
+
+            if ($delivery->logistics_company_id !== $courier->logistics_company_id) {
+                abort(403, 'This delivery was not routed to your logistics company.');
+            }
 
             if ($delivery->status !== 'pending') {
                 abort(409, 'This delivery has already been accepted by another courier.');
             }
 
             $delivery->update([
-                'courier_id' => $request->user()->courier->id,
+                'courier_id' => $courier->id,
                 'status' => 'accepted',
                 'accepted_at' => now(),
             ]);

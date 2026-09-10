@@ -20,7 +20,7 @@ const NAV = [
   {
     group: "People",
     items: [
-      { key: "registrations", label: "Registrations", href: "registrations.html", icon: "inbox", badgeKey: "pending_registrations" },
+      { key: "registrations", label: "Registrations", href: "registrations.html", icon: "inbox", badgeKeys: ["pending_registrations", "pending_seller_applications"] },
       { key: "accounts", label: "Accounts", href: "accounts.html", icon: "users" },
     ],
   },
@@ -55,6 +55,16 @@ const ICONS = {
 };
 
 const PIN_KEY = "shopuno_admin_nav_pinned";
+const THEME_KEY = "shopuno_admin_theme";
+
+// Applied at module load — before initShell rebuilds <body> — so a saved
+// dark-mode preference takes effect immediately instead of flashing the
+// light paper theme for a frame first.
+try {
+  if (localStorage.getItem(THEME_KEY) === "dark") document.documentElement.dataset.theme = "dark";
+} catch {
+  // Private browsing / storage disabled — default to the light theme.
+}
 
 function icon(name) {
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ""}</svg>`;
@@ -83,7 +93,7 @@ export function initShell({ page, title, eyebrow = "Admin Console", actions = ""
       <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
       <aside class="admin-sidebar" id="adminSidebar">
         <div class="sidebar-brand">
-          <div class="seal">Su</div>
+          <div class="seal"><img src="/assets/img/logo-mark.png" alt="" width="24" height="24"></div>
           <div class="brand-text">
             <h2>ShopUno</h2>
             <span>Admin Ledger</span>
@@ -94,6 +104,11 @@ export function initShell({ page, title, eyebrow = "Admin Console", actions = ""
         </div>
         <nav class="sidebar-nav" id="sidebarNav"></nav>
         <div class="sidebar-foot">
+          <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false" title="Toggle dark mode">
+            <svg class="theme-icon-light" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+            <svg class="theme-icon-dark" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+            <span class="rail-label" id="themeToggleLabel">Dark mode</span>
+          </button>
           <div class="sidebar-user">
             <div class="avatar">${initials(user)}</div>
             <div class="who">
@@ -150,6 +165,7 @@ export function initShell({ page, title, eyebrow = "Admin Console", actions = ""
   setupRailPin();
   setupMobileSidebar();
   setupIndex();
+  setupThemeToggle();
   loadBadgeCounts();
 
   return document.getElementById("adminContent");
@@ -277,6 +293,30 @@ function setupRailPin() {
   });
 }
 
+/** Light/dark ("night audit") toggle for the whole console — a data
+ * attribute on <html> swaps every CSS variable at once, so no page-specific
+ * styling needs to know about it. Preference persists per-browser, same as
+ * the rail pin. */
+function setupThemeToggle() {
+  const btn = document.getElementById("themeToggle");
+  const label = document.getElementById("themeToggleLabel");
+  const apply = (dark) => {
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
+    btn.setAttribute("aria-pressed", String(dark));
+    label.textContent = dark ? "Light mode" : "Dark mode";
+  };
+  apply(document.documentElement.dataset.theme === "dark");
+  btn.addEventListener("click", () => {
+    const dark = document.documentElement.dataset.theme !== "dark";
+    apply(dark);
+    try {
+      localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
+    } catch {
+      // Nothing to do if storage isn't available.
+    }
+  });
+}
+
 /** Wires the mobile hamburger + backdrop so the rail can be opened as a
  * full off-canvas drawer below the 720px breakpoint, where hover-to-expand
  * doesn't apply. */
@@ -308,7 +348,7 @@ function renderNav(activeKey) {
         ${group.items
           .map(
             (item) => `
-          <a class="nav-link${item.key === activeKey ? " is-active" : ""}" href="${item.href}" data-badge-key="${item.badgeKey || ""}" title="${item.label}">
+          <a class="nav-link${item.key === activeKey ? " is-active" : ""}" href="${item.href}" data-badge-key="${(item.badgeKeys || [item.badgeKey]).filter(Boolean).join(",")}" title="${item.label}">
             <span class="nav-icon">${icon(item.icon)}</span>
             <span class="rail-label nav-link-label">${item.label}</span>
             <span class="nav-badge" data-badge hidden></span>
@@ -324,11 +364,11 @@ async function loadBadgeCounts() {
     const data = await api.get("/admin/dashboard");
     const attention = data.needs_attention || {};
     document.querySelectorAll("[data-badge-key]").forEach((link) => {
-      const key = link.dataset.badgeKey;
-      if (!key) return;
-      const count = attention[key];
+      const keys = link.dataset.badgeKey.split(",").filter(Boolean);
+      if (!keys.length) return;
+      const count = keys.reduce((sum, key) => sum + (attention[key] || 0), 0);
       const badge = link.querySelector("[data-badge]");
-      if (count && count > 0) {
+      if (count > 0) {
         badge.textContent = count > 99 ? "99+" : count;
         badge.hidden = false;
       }

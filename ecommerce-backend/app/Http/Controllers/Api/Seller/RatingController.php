@@ -18,16 +18,17 @@ class RatingController extends Controller
             ->latest()
             ->paginate(20);
 
-        return response()->json([
+        $items = collect($ratings->items())->map(fn ($r) => [
+            'id' => $r->id,
+            'order_id' => $r->order_id,
+            'score' => $r->score,
+            'feedback' => $r->feedback,
+            'from' => "{$r->ratedBy->first_name} {$r->ratedBy->last_name}",
+            'created_at' => $r->created_at?->toIso8601String(),
+        ])->all();
+
+        return $this->paginatedResponse($items, $ratings, [
             'average_rating' => $seller->averageRating(),
-            'data' => $ratings->through(fn ($r) => [
-                'id' => $r->id,
-                'order_id' => $r->order_id,
-                'score' => $r->score,
-                'feedback' => $r->feedback,
-                'from' => "{$r->ratedBy->first_name} {$r->ratedBy->last_name}",
-                'created_at' => $r->created_at?->toIso8601String(),
-            ]),
         ]);
     }
 }

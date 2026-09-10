@@ -13,9 +13,9 @@ class AnnouncementController extends Controller
     /** GET /admin/announcements — includes unpublished/drafts, unlike the public endpoint. */
     public function index(): JsonResponse
     {
-        return response()->json([
-            'data' => Announcement::with('admin:id,first_name,last_name')->latest()->paginate(20),
-        ]);
+        $announcements = Announcement::with('admin:id,first_name,last_name')->latest()->paginate(20);
+
+        return $this->paginatedResponse($announcements->items(), $announcements);
     }
 
     public function store(SaveAnnouncementRequest $request): JsonResponse

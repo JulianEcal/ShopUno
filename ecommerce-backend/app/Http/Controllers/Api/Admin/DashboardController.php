@@ -7,6 +7,7 @@ use App\Models\Complaint;
 use App\Models\ModerationLog;
 use App\Models\Order;
 use App\Models\ProductFlag;
+use App\Models\SellerApplication;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 
@@ -16,12 +17,20 @@ class DashboardController extends Controller
      * GET /admin/dashboard
      * Everything here is a count or a small recent-activity feed pulled from
      * tables that already exist — no new tables needed for this endpoint.
+     *
+     * Updated for the roles overhaul: pending_registrations now only ever
+     * reflects Logistics applicants in practice (Buyer auto-approves,
+     * Courier is reviewed by its Logistics company, not admin) — so Seller
+     * Applications gets counted as its own queue instead of being invisible.
      */
     public function index(): JsonResponse
     {
+        $pendingSellerApplications = SellerApplication::where('status', 'pending')->count();
+
         return response()->json([
             'counts' => [
                 'pending_registrations' => $this->countByRole(User::where('status', 'pending')),
+                'pending_seller_applications' => $pendingSellerApplications,
                 'active_users' => $this->countByRole(User::where('role', '!=', 'admin')->where('status', 'active')),
                 'suspended_or_deactivated' => User::whereIn('status', ['suspended', 'deactivated'])->count(),
                 'open_complaints' => Complaint::where('status', 'open')->count(),
@@ -35,6 +44,7 @@ class DashboardController extends Controller
             // numbers as above, just reshaped as a flat "needs attention" list.
             'needs_attention' => array_filter([
                 'pending_registrations' => User::where('status', 'pending')->count(),
+                'pending_seller_applications' => $pendingSellerApplications,
                 'open_complaints' => Complaint::where('status', 'open')->count(),
                 'flagged_products' => $this->currentlyFlaggedProductCount(),
             ], fn ($count) => $count > 0),
@@ -43,6 +53,11 @@ class DashboardController extends Controller
         ]);
     }
 
+    /**
+     * Built from whichever roles actually appear in the result, rather than
+     * a hardcoded buyer/seller/courier list — that list went stale the
+     * moment Logistics was added and Seller stopped being reachable here.
+     */
     protected function countByRole($query): array
     {
         $counts = (clone $query)->selectRaw('role, count(*) as count')->groupBy('role')->pluck('count', 'role');
@@ -51,6 +66,7 @@ class DashboardController extends Controller
             'buyer' => $counts['buyer'] ?? 0,
             'seller' => $counts['seller'] ?? 0,
             'courier' => $counts['courier'] ?? 0,
+            'logistics' => $counts['logistics'] ?? 0,
             'total' => $counts->sum(),
         ];
     }
@@ -96,7 +112,18 @@ class DashboardController extends Controller
                 'created_at' => $c->created_at,
             ]);
 
-        return $moderation->concat($flags)->concat($complaints)
+        $sellerApplications = SellerApplication::with('user:id,first_name,last_name')
+            ->whereIn('status', ['approved', 'rejected'])
+            ->latest('reviewed_at')->limit(5)->get()
+            ->map(fn ($app) => [
+                'type' => 'seller_application',
+                'action' => $app->status,
+                'summary' => "{$app->user->first_name} {$app->user->last_name}'s application for \"{$app->business_name}\" was {$app->status}",
+                'note' => $app->rejection_reason,
+                'created_at' => $app->reviewed_at ?? $app->updated_at,
+            ]);
+
+        return $moderation->concat($flags)->concat($complaints)->concat($sellerApplications)
             ->sortByDesc('created_at')
             ->take(10)
             ->values()

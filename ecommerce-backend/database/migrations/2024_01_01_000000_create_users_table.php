@@ -8,8 +8,15 @@ return new class extends Migration
 {
     /**
      * Replaces the default Laravel users migration.
-     * One table for all four roles (buyer/seller/courier/admin) — role-specific
-     * fields live in sellers / couriers. Admin has no extension table.
+     * One table for all five roles (buyer/seller/courier/logistics/admin) —
+     * role-specific fields live in sellers / couriers / logistics_companies.
+     * Admin has no extension table.
+     *
+     * Registration model (per project decision — see README "Roles &
+     * Registration Flow"): Buyer and Logistics register directly with the
+     * platform. Seller is an UPGRADE applied for from an existing Buyer
+     * account (see seller_applications table), not a registration type.
+     * Courier applies to a specific Logistics company, not the platform.
      */
     public function up(): void
     {
@@ -30,9 +37,10 @@ return new class extends Migration
             $table->unsignedTinyInteger('age');
             $table->string('upload_id_path')->nullable();
 
-            $table->enum('role', ['buyer', 'seller', 'courier', 'admin']);
+            $table->enum('role', ['buyer', 'seller', 'courier', 'logistics', 'admin']);
 
-            // pending/rejected           -> registration workflow
+            // pending/rejected           -> registration workflow (logistics, courier)
+            //                                buyers skip this — see RegistrationController::buyer()
             // active/suspended/deactivated -> account management (post-approval)
             $table->enum('status', [
                 'pending', 'rejected',
