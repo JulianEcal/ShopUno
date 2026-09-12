@@ -24,9 +24,21 @@ class CartItem extends Model
         return $this->belongsTo(ProductVariation::class, 'product_variation_id');
     }
 
-    /** Unit price including any variation price adjustment. */
+    /** Full price including any variation price adjustment, before any discount. */
+    public function originalUnitPrice(): float
+    {
+        return round((float) $this->product->base_price + (float) ($this->variation?->price_adjustment ?? 0), 2);
+    }
+
+    /**
+     * The price actually charged — originalUnitPrice() with the product's
+     * discount applied if one is currently active. This is what checkout
+     * (Buyer\OrderController::store()) sums into the order, so a discount
+     * that's live at add-to-cart time but expires before checkout is
+     * re-evaluated fresh here rather than being locked in early.
+     */
     public function unitPrice(): float
     {
-        return (float) $this->product->base_price + (float) ($this->variation->price_adjustment ?? 0);
+        return $this->product->discountedPrice($this->originalUnitPrice());
     }
 }

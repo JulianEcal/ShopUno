@@ -30,6 +30,11 @@ class DashboardController extends Controller
 
         $flaggedCount = $this->currentlyFlaggedProductCount($seller->id);
 
+        // Drafts started in the "Add a product" wizard (or via "Save draft,
+        // finish later") but never published — not an admin-review queue,
+        // just unfinished listings sitting in the seller's own inventory.
+        $draftCount = $seller->products()->active()->where('is_published', false)->count();
+
         return response()->json([
             'counts' => [
                 'orders_today' => (clone $orders)->whereDate('created_at', today())->count(),
@@ -39,6 +44,7 @@ class DashboardController extends Controller
                 'total_products' => $seller->products()->active()->count(),
                 'low_stock_products' => $lowStockCount,
                 'flagged_products' => $flaggedCount,
+                'draft_products' => $draftCount,
                 'average_rating' => $seller->averageRating(),
             ],
 
@@ -46,6 +52,7 @@ class DashboardController extends Controller
                 'pending_orders' => (clone $orders)->where('status', 'to_ship')->count(),
                 'low_stock_products' => $lowStockCount,
                 'flagged_products' => $flaggedCount,
+                'draft_products' => $draftCount,
             ], fn ($count) => $count > 0),
 
             'recent_activity' => $this->recentActivity($seller),

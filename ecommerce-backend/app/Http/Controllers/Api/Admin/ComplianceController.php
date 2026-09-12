@@ -35,15 +35,18 @@ class ComplianceController extends Controller
             $query->where('name', 'like', "%{$search}%");
         }
 
-        $products = $query->latest()->paginate(20);
-
+        // Applied before paginate() on purpose — filtering the Collection
+        // after paginate() would leave the pagination metadata (total,
+        // last_page) describing the unfiltered set, and could drop matching
+        // products that happened to land on a page that got thinned out.
+        // See Product::scopeCurrentlyFlagged().
         if ($request->boolean('flagged')) {
-            $products->setCollection(
-                $products->getCollection()->filter(fn ($p) => $p->isCurrentlyFlagged())->values()
-            );
+            $query->currentlyFlagged();
         }
 
-        return response()->json(['data' => ProductResource::collection($products)]);
+        $products = $query->latest()->paginate(20);
+
+        return $this->paginatedResponse(ProductResource::collection($products), $products);
     }
 
     public function show(Product $product): JsonResponse

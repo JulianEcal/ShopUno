@@ -39,7 +39,7 @@ class AuthController extends Controller
 
         return response()->json([
             'token' => $token,
-            'user' => new UserResource($user->load(['address', 'seller', 'courier'])),
+            'user' => new UserResource($user->load(['address', 'addresses', 'seller', 'courier.logisticsCompany', 'logisticsCompany'])),
         ]);
     }
 
@@ -52,7 +52,7 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        $user = $request->user()->load(['address', 'seller', 'courier']);
+        $user = $request->user()->load(['address', 'addresses', 'seller', 'courier.logisticsCompany', 'logisticsCompany']);
 
         return response()->json([
             'user' => new UserResource($user),

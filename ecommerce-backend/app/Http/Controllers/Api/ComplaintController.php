@@ -19,7 +19,7 @@ class ComplaintController extends Controller
             ->latest()
             ->paginate(20);
 
-        return response()->json(['data' => ComplaintResource::collection($complaints)]);
+        return $this->paginatedResponse(ComplaintResource::collection($complaints), $complaints);
     }
 
     public function show(Request $request, Complaint $complaint): JsonResponse

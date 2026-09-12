@@ -8,6 +8,7 @@ use App\Http\Resources\UserResource;
 use App\Mail\RegistrationApproved;
 use App\Mail\RegistrationRejected;
 use App\Models\ModerationLog;
+use App\Models\SellerApplication;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,13 +18,18 @@ use Illuminate\Support\Facades\Mail;
 class RegistrationController extends Controller
 {
     /**
-     * GET /admin/registrations?status=pending&role=seller&search=
+     * GET /admin/registrations?status=pending&role=logistics&search=
+     * In practice this only ever queues Logistics applicants — Buyer
+     * auto-approves and never appears here, Courier is reviewed by its
+     * Logistics company (not admin), and Seller was never a registration
+     * type to begin with. The ?role= filter still works generically in
+     * case that ever changes, but Logistics is the only role you'll see.
      * Defaults to pending, since that's the queue admins actually review.
      */
     public function index(Request $request): JsonResponse
     {
         $query = User::query()
-            ->with(['address', 'seller', 'courier'])
+            ->with(['address', 'seller', 'courier.logisticsCompany', 'logisticsCompany'])
             ->where('status', $request->query('status', 'pending'));
 
         if ($role = $request->query('role')) {
@@ -38,15 +44,48 @@ class RegistrationController extends Controller
             });
         }
 
-        return response()->json([
-            'data' => UserResource::collection($query->latest()->paginate(20)),
-        ]);
+        $users = $query->latest()->paginate(20);
+
+        return $this->paginatedResponse(UserResource::collection($users), $users);
+    }
+
+    /**
+     * GET /admin/registrations/counts?status=pending
+     * Per-role tallies for the applicant queue's role tiles. Seller has no
+     * rows in the `users` table at this status (Seller Applications is a
+     * separate table entirely — see SellerApplicationController), so its
+     * count is pulled from there and folded in alongside buyer/courier/
+     * logistics. This lets the frontend badge all five tiles (four roles +
+     * "All") from a single request instead of firing one list call per tile.
+     */
+    public function counts(Request $request): JsonResponse
+    {
+        $status = $request->query('status', 'pending');
+        // Registrations uses 'active' for an approved account; Seller
+        // Applications uses 'approved' for the same idea — map so a single
+        // status tab on the frontend can drive both queries correctly.
+        $sellerStatus = $status === 'active' ? 'approved' : $status;
+
+        $byRole = User::where('status', $status)
+            ->selectRaw('role, count(*) as count')
+            ->groupBy('role')
+            ->pluck('count', 'role');
+
+        $counts = [
+            'buyer' => $byRole['buyer'] ?? 0,
+            'seller' => SellerApplication::where('status', $sellerStatus)->count(),
+            'courier' => $byRole['courier'] ?? 0,
+            'logistics' => $byRole['logistics'] ?? 0,
+        ];
+        $counts['all'] = array_sum($counts);
+
+        return response()->json(['counts' => $counts]);
     }
 
     public function show(User $user): JsonResponse
     {
         return response()->json([
-            'user' => new UserResource($user->load(['address', 'seller', 'courier'])),
+            'user' => new UserResource($user->load(['address', 'seller', 'courier.logisticsCompany', 'logisticsCompany'])),
         ]);
     }
 

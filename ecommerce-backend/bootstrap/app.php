@@ -13,6 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+    // Cloudflare Tunnel sits in front of this app in production, so Laravel
+    // needs to trust it in order to correctly detect HTTPS and generate
+    // correct absolute URLs (asset links, redirects, etc).
+    $middleware->trustProxies(at: '*');
+
     $middleware->alias([
         'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
         'seller' => \App\Http\Middleware\EnsureUserIsSeller::class,

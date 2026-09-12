@@ -14,7 +14,7 @@ class CartController extends Controller
 {
     public function show(Request $request): JsonResponse
     {
-        $cart = $this->cartFor($request)->load('items.product.images', 'items.product.seller', 'items.variation');
+        $cart = $this->cartFor($request)->load('items.product.images', 'items.variation.image', 'items.variation.optionValue1.option', 'items.variation.optionValue2.option');
 
         return response()->json(['cart' => new CartResource($cart)]);
     }
@@ -36,7 +36,7 @@ class CartController extends Controller
 
         return response()->json([
             'message' => 'Added to cart.',
-            'cart' => new CartResource($cart->fresh(['items.product.images', 'items.product.seller', 'items.variation'])),
+            'cart' => new CartResource($cart->fresh(['items.product.images', 'items.variation.image', 'items.variation.optionValue1.option', 'items.variation.optionValue2.option'])),
         ]);
     }
 

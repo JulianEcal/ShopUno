@@ -14,6 +14,16 @@ class RegisterCourierRequest extends FormRequest
     public function rules(): array
     {
         return array_merge($this->baseRules(), [
+            'logistics_company_id' => [
+                'required',
+                'exists:logistics_companies,id',
+                function ($attribute, $value, $fail) {
+                    $company = \App\Models\LogisticsCompany::find($value);
+                    if ($company && $company->user->status !== 'active') {
+                        $fail('That logistics company is not currently accepting applications.');
+                    }
+                },
+            ],
             'vehicle_type' => ['required', 'string', 'max:50'],
             'plate_number' => ['required', 'string', 'max:20'],
             'or_cr' => ['required', 'file', 'mimes:' . implode(',', config('documents.accepted_extensions')), 'max:' . config('documents.max_size_kb')],
@@ -27,6 +37,9 @@ class RegisterCourierRequest extends FormRequest
         $maxMb = config('documents.max_size_kb') / 1024;
 
         return [
+            'logistics_company_id.required' => 'Please select the logistics company you\'re applying to.',
+            'logistics_company_id.exists' => 'That logistics company could not be found.',
+
             'upload_id.required' => 'Please upload a valid ID.',
             'upload_id.mimes' => "Valid ID must be a {$formats} file.",
             'upload_id.max' => "Valid ID must not be larger than {$maxMb}MB.",

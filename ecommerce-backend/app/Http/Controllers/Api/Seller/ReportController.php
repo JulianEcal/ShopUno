@@ -43,10 +43,44 @@ class ReportController extends Controller
 
             'by_status' => $orders->groupBy('status')->map->count(),
 
+            // Day-by-day trend so the console can chart the range instead of
+            // just showing a single flat total — same order set as above,
+            // bucketed by calendar day.
+            'daily' => $this->dailyBreakdown($orders, $from, $to),
+
             // "Performance tracking" — which products actually drove revenue
             // in this range, not just totals.
             'top_products' => $this->topProducts($orders->pluck('id')),
         ]);
+    }
+
+    /**
+     * Buckets the already-fetched order collection by calendar day so the
+     * chart has a zero-filled point for every day in range — a day with no
+     * orders is a real (low) data point, not a gap in the line.
+     */
+    protected function dailyBreakdown($orders, Carbon $from, Carbon $to): array
+    {
+        $byDay = $orders->groupBy(fn ($o) => $o->created_at->toDateString());
+
+        $days = [];
+        $cursor = $from->copy()->startOfDay();
+        $end = $to->copy()->startOfDay();
+        while ($cursor->lte($end)) {
+            $key = $cursor->toDateString();
+            $dayOrders = $byDay->get($key, collect());
+
+            $days[] = [
+                'date' => $key,
+                'orders' => $dayOrders->count(),
+                'sales' => round((float) $dayOrders->sum('total'), 2),
+                'collected' => round((float) $dayOrders->where('is_paid', true)->sum('total'), 2),
+            ];
+
+            $cursor->addDay();
+        }
+
+        return $days;
     }
 
     protected function resolveRange(Request $request): array

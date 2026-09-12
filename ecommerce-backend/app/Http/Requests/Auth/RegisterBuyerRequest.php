@@ -40,7 +40,7 @@ class RegisterBuyerRequest extends FormRequest
     }
 
     /**
-     * Shared across buyer/seller/courier registration.
+     * Shared with RegisterCourierRequest and RegisterLogisticsRequest.
      * Kept here (and duplicated in the other two requests) rather than a trait,
      * so each request's rule set stays easy to read on its own.
      */
