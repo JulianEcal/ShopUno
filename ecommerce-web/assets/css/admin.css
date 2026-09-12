@@ -29,12 +29,34 @@
   --line-soft:rgba(36,30,23,0.09);
   --line-on-dark:rgba(255,255,255,0.14);
 
+  /* ---- chip (filled dark chip used for the active status pill, the
+     active role-tab icon crumb, and the bulk-action tray) — kept as its
+     own pair rather than reusing --ink-2/--paper-card, because those two
+     invert independently in dark mode and can end up both wanting to be
+     "the dark one" at the same time. --chip is always the raised-dark
+     end, --chip-ink is always the light-text end, in either theme. ---- */
+  --chip:#332A1F;
+  --chip-ink:#FBF6E9;
+
   /* ---- turmeric (single brand accent — the stamp ink) ---- */
   --stamp:#C17A1F;
   --stamp-bright:#E0952E;
   --stamp-deep:#8F5C15;
   --stamp-soft:rgba(193,122,31,0.14);
   --stamp-line:rgba(193,122,31,0.5);
+
+  /* ---- role inks — one distinguishing hue per applicant role, used only
+     for role tags/tabs so the single-accent rule above still holds
+     everywhere else ---- */
+  --role-buyer:#3E6690;
+  --role-buyer-soft:rgba(62,102,144,0.14);
+  --role-buyer-line:rgba(62,102,144,0.4);
+  --role-courier:#1F7A72;
+  --role-courier-soft:rgba(31,122,114,0.14);
+  --role-courier-line:rgba(31,122,114,0.4);
+  --role-logistics:#6B4E71;
+  --role-logistics-soft:rgba(107,78,113,0.14);
+  --role-logistics-line:rgba(107,78,113,0.4);
 
   /* ---- slate (neutral status / role tags) ---- */
   --slate:#8A8271;
@@ -98,9 +120,8 @@ input, select, textarea{ font-family:inherit; font-size:14px; color:var(--ink); 
    ================================================================ */
 .admin-sidebar{
   width:var(--rail-collapsed);
-  flex-shrink:0;
-  position:sticky;
-  top:0;
+  position:fixed;
+  top:0; left:0;
   height:100vh;
   z-index:40;
   background:var(--paper-rail);
@@ -126,8 +147,6 @@ input, select, textarea{ font-family:inherit; font-size:14px; color:var(--ink); 
 .admin-sidebar:focus-within,
 .admin-sidebar.is-pinned{
   width:var(--rail-expanded);
-  position:fixed;
-  top:0; left:0; bottom:0;
   box-shadow:var(--shadow);
 }
 .rail-label{
@@ -300,14 +319,27 @@ input, select, textarea{ font-family:inherit; font-size:14px; color:var(--ink); 
 .logout-btn:hover{ background:var(--reject); color:#fff; }
 
 /* ---------- main column ---------- */
-.admin-main{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.admin-main{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  margin-left:var(--rail-collapsed);
+  transition:margin-left .16s ease;
+}
+/* Pinning is a persistent choice, not a brief hover — so unlike the
+   hover/focus peek (which floats over content on purpose), a pinned
+   rail actually reflows the content column to make room for it. */
+.admin-shell:has(.admin-sidebar.is-pinned) .admin-main{
+  margin-left:var(--rail-expanded);
+}
 
 .admin-topbar{
   position:relative;
   display:flex; align-items:flex-end; justify-content:space-between;
   gap:16px;
   padding:26px 32px 18px;
-  max-width:1240px; width:100%; margin:0 auto;
+  max-width:clamp(720px, 82vw, 1600px); width:100%; margin:0 auto;
 }
 .admin-topbar::after{
   content:"";
@@ -441,7 +473,7 @@ input, select, textarea{ font-family:inherit; font-size:14px; color:var(--ink); 
 .index-item.is-active .index-item-icon{ color:var(--stamp-deep); }
 .index-empty{ padding:24px 14px; text-align:center; font-size:13px; color:var(--ink-faint); font-style:italic; }
 
-.admin-content{ padding:24px 32px 60px; max-width:1240px; width:100%; margin:0 auto; }
+.admin-content{ padding:24px 32px 60px; max-width:clamp(720px, 82vw, 1600px); width:100%; margin:0 auto; }
 
 /* ---------- buttons ---------- */
 .btn{
@@ -486,13 +518,18 @@ input, select, textarea{ font-family:inherit; font-size:14px; color:var(--ink); 
 }
 .stat-card{
   position:relative;
+  display:block;
   background:var(--paper-card);
   border:1px solid var(--line);
   border-left:3px solid var(--line);
   border-radius:var(--radius-md);
   padding:18px 19px 17px;
-  transition:border-color .15s ease;
+  transition:border-color .15s ease, transform .12s ease;
+  color:inherit;
+  text-decoration:none;
 }
+a.stat-card{ cursor:pointer; }
+a.stat-card:hover{ transform:translateY(-1px); box-shadow:var(--shadow-sm); }
 .stat-card:hover{ border-left-color:var(--ink-faint); }
 .stat-card .stat-label{
   font-family:'Martian Mono', monospace;
@@ -529,13 +566,18 @@ input, select, textarea{ font-family:inherit; font-size:14px; color:var(--ink); 
 .stat-card.is-good{ border-left-color:var(--approve); }
 .stat-card.is-good .stat-value{ color:var(--approve); }
 
-/* hero tile — dark, spans two columns, carries the proportion bars */
+/* hero tile — dark, spans two columns, carries the proportion bars.
+   Deliberately dark in *both* themes (an anchor tile, not a themed
+   surface), so it's built on --paper-rail/--chip-ink — the pair that
+   stays dark-bg/light-text in either mode — rather than --ink, which
+   is correct for normal text but flips to a light color in dark mode
+   and was leaving this tile with white text on a now-light background. */
 .stat-card.is-hero{
   grid-column:span 2;
-  background:var(--ink);
-  border-color:var(--ink);
+  background:var(--paper-rail);
+  border-color:var(--paper-rail);
   border-left-color:var(--stamp-bright);
-  color:var(--paper-card);
+  color:var(--chip-ink);
 }
 .stat-card.is-hero .stat-label{ color:rgba(255,255,255,0.5); }
 .stat-card.is-hero .stat-label .stat-icon{ color:var(--stamp-bright); opacity:1; }
@@ -568,7 +610,10 @@ input, select, textarea{ font-family:inherit; font-size:14px; color:var(--ink); 
   border-radius:999px;
   padding:7px 14px 7px 10px;
   font-size:12.5px; font-weight:700;
+  text-decoration:none;
+  transition:background .15s ease;
 }
+a.attention-chip:hover{ background:var(--stamp-line); }
 .attention-chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--stamp); flex-shrink:0; }
 .attention-chip .count{ font-family:'Martian Mono', monospace; }
 .attention-empty{
@@ -629,6 +674,7 @@ input, select, textarea{ font-family:inherit; font-size:14px; color:var(--ink); 
 .activity-icon.type-moderation{ color:var(--ink); border-color:var(--line); }
 .activity-icon.type-compliance{ color:var(--stamp-deep); border-color:var(--stamp-line); }
 .activity-icon.type-complaint{ color:var(--reject); border-color:rgba(163,53,42,0.35); }
+.activity-icon.type-seller_application{ color:var(--stamp-deep); border-color:var(--stamp-line); }
 .activity-body{ min-width:0; flex:1; padding-top:2px; }
 .activity-summary{ font-size:13.5px; color:var(--ink); line-height:1.4; }
 .activity-note{ font-size:12px; color:var(--ink-faint); margin-top:3px; font-style:italic; }
@@ -636,12 +682,18 @@ input, select, textarea{ font-family:inherit; font-size:14px; color:var(--ink); 
 .empty-state{ padding:38px 20px; text-align:center; color:var(--ink-faint); font-size:13.5px; }
 .empty-state .empty-title{ font-family:'Fraunces', serif; font-weight:600; font-size:19px; color:var(--ink-soft); margin-bottom:4px; }
 
-/* ---------- filter bar ---------- */
+/* ---------- filter bar ----------
+   Previously a full-width strip in --paper-dim sitting between the role
+   tabs and the table — since only the search box lives on the right, that
+   read as a long bare band of color with nothing in most of it. It now
+   matches the panel's own surface (no separate colored strip, just a
+   hairline to mark the edge) and the empty side carries a live result
+   count instead of being blank. */
 .filter-bar{
   display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-  padding:15px 22px;
+  padding:13px 22px;
   border-bottom:1px solid var(--line-soft);
-  background:var(--paper-dim);
+  background:var(--paper-card);
 }
 .filter-bar input[type="text"], .filter-bar input[type="search"], .filter-bar select, .filter-bar input[type="date"]{
   padding:9px 13px;
@@ -653,6 +705,12 @@ input, select, textarea{ font-family:inherit; font-size:14px; color:var(--ink); 
 .filter-bar input[type="text"]{ min-width:200px; flex:1; }
 .filter-bar label{ font-size:11.5px; font-weight:600; color:var(--ink-soft); margin-right:-4px; }
 .filter-spacer{ flex:1; }
+.filter-hint{
+  flex:1;
+  font-family:'Martian Mono', monospace;
+  font-size:11px; letter-spacing:0.03em; text-transform:uppercase;
+  color:var(--ink-faint);
+}
 
 /* ---------- table ---------- */
 .table-wrap{ overflow-x:auto; }
@@ -700,9 +758,128 @@ table.data-table tbody tr:last-child td{ border-bottom:none; }
 .badge-suspended, .badge-rejected, .badge-open, .badge-deactivate{ background:var(--reject-soft); color:var(--reject); }
 .badge-deactivated{ background:var(--slate-soft); color:var(--slate); }
 .badge-archived{ background:var(--slate-soft); color:var(--slate); }
-.badge-buyer{ background:var(--slate-soft); color:var(--ink-soft); }
+.badge-buyer{ background:var(--role-buyer-soft); color:var(--role-buyer); }
 .badge-seller{ background:var(--stamp-soft); color:var(--stamp-deep); }
-.badge-courier{ background:rgba(36,30,23,0.07); color:var(--ink); }
+.badge-courier{ background:var(--role-courier-soft); color:var(--role-courier); }
+.badge-logistics{ background:var(--role-logistics-soft); color:var(--role-logistics); }
+
+/* ================================================================
+   ROLE TABS — the applicant queue is framed as a ledger divider:
+   a row of index tabs (one per role, plus "All") standing along the
+   top edge of the book. The active tab lifts and joins the panel
+   below it; the rest sit slightly recessed, like unopened sections.
+   Each tab carries its own tally stamped in the corner rather than
+   a plain count, echoing the badge language used everywhere else.
+   ================================================================ */
+.role-tabs{
+  display:grid;
+  grid-template-columns:repeat(5, 1fr);
+  gap:10px;
+  padding:18px 22px 0;
+}
+.role-tab{
+  position:relative;
+  display:flex; align-items:center; gap:11px;
+  padding:15px 16px 14px;
+  background:var(--paper-dim);
+  border:1px solid var(--line);
+  border-bottom:none;
+  border-radius:12px 12px 0 0;
+  cursor:pointer;
+  text-align:left;
+  font-family:inherit;
+  transform:translateY(4px);
+  transition:transform .15s ease, background .15s ease, border-color .15s ease;
+}
+.role-tab:hover{ transform:translateY(1px); background:var(--paper-card); }
+.role-tab-icon{
+  flex-shrink:0;
+  width:34px; height:34px;
+  border-radius:9px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--paper-card);
+  border:1.5px dashed var(--line);
+  color:var(--ink-soft);
+}
+.role-tab-icon svg{ width:16px; height:16px; }
+.role-tab-body{ min-width:0; flex:1; }
+.role-tab-label{
+  font-size:12.5px; font-weight:700; color:var(--ink-soft);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.role-tab-count{
+  font-family:'Fraunces', serif; font-weight:600; font-size:20px;
+  color:var(--ink); line-height:1.15; margin-top:1px;
+}
+.role-tab.is-active{
+  transform:translateY(0);
+  background:var(--paper-card);
+  border-color:var(--line);
+  box-shadow:0 -2px 0 var(--stamp) inset;
+  z-index:1;
+}
+.role-tab.is-active::after{
+  content:"";
+  position:absolute; left:0; right:0; bottom:-1px; height:1px;
+  background:var(--paper-card);
+}
+.role-tab.is-active .role-tab-icon{
+  background:var(--chip); border-style:solid; border-color:var(--chip); color:var(--stamp-bright);
+}
+.role-tab.is-active .role-tab-label{ color:var(--ink); }
+.role-tab.is-all.is-active .role-tab-icon{ background:var(--stamp); border-color:var(--stamp); color:#fff; }
+
+/* Per-role tint — carried on the icon (always) and the active tab's top
+   rule + icon fill (once selected), so each role reads as its own color
+   at a glance instead of everything but Seller sitting in the same grey. */
+.role-tab[data-role="buyer"] .role-tab-icon{ border-style:solid; border-color:var(--role-buyer-line); color:var(--role-buyer); }
+.role-tab[data-role="buyer"].is-active{ box-shadow:0 -2px 0 var(--role-buyer) inset; }
+.role-tab[data-role="buyer"].is-active .role-tab-icon{ background:var(--role-buyer); border-color:var(--role-buyer); color:#fff; }
+
+.role-tab[data-role="seller"] .role-tab-icon{ border-style:solid; border-color:var(--stamp-line); color:var(--stamp-deep); }
+.role-tab[data-role="seller"].is-active .role-tab-icon{ background:var(--stamp); border-color:var(--stamp); color:#fff; }
+
+.role-tab[data-role="courier"] .role-tab-icon{ border-style:solid; border-color:var(--role-courier-line); color:var(--role-courier); }
+.role-tab[data-role="courier"].is-active{ box-shadow:0 -2px 0 var(--role-courier) inset; }
+.role-tab[data-role="courier"].is-active .role-tab-icon{ background:var(--role-courier); border-color:var(--role-courier); color:#fff; }
+
+.role-tab[data-role="logistics"] .role-tab-icon{ border-style:solid; border-color:var(--role-logistics-line); color:var(--role-logistics); }
+.role-tab[data-role="logistics"].is-active{ box-shadow:0 -2px 0 var(--role-logistics) inset; }
+.role-tab[data-role="logistics"].is-active .role-tab-icon{ background:var(--role-logistics); border-color:var(--role-logistics); color:#fff; }
+@media (max-width:860px){
+  .role-tabs{ grid-template-columns:repeat(3, 1fr); }
+  .role-tab{ grid-column:span 1; }
+}
+@media (max-width:560px){
+  .role-tabs{ grid-template-columns:repeat(2, 1fr); }
+}
+
+/* ---------- status pills (segmented control) ---------- */
+.status-pills{
+  display:inline-flex;
+  background:var(--paper-dim);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:3px;
+  gap:2px;
+}
+.status-pill{
+  font-family:inherit;
+  font-size:12.5px; font-weight:600;
+  padding:7px 15px;
+  border-radius:999px;
+  border:none;
+  background:transparent;
+  color:var(--ink-soft);
+  cursor:pointer;
+  transition:background .15s ease, color .15s ease;
+  white-space:nowrap;
+}
+.status-pill:hover{ color:var(--ink); }
+.status-pill.is-active{
+  background:var(--chip);
+  color:var(--chip-ink);
+}
 
 /* ---------- pagination ---------- */
 .pagination{
@@ -860,7 +1037,7 @@ table.data-table tbody tr:last-child td{ border-bottom:none; }
   border:1px solid var(--line-soft); background:var(--paper-dim); cursor:zoom-in;
   transition:transform .15s ease, border-color .15s ease;
 }
-.doc-thumb:hover{ transform:scale(1.03); border-color:var(--teal-deep); }
+.doc-thumb:hover{ transform:scale(1.03); border-color:var(--role-courier-line); }
 .doc-file-tile{
   width:84px; height:84px; border-radius:10px; display:flex; flex-direction:column;
   align-items:center; justify-content:center; gap:4px; font-size:10.5px; font-weight:700;
@@ -920,6 +1097,7 @@ table.data-table tbody tr:last-child td{ border-bottom:none; }
   .detail-grid{ grid-template-columns:1fr; }
 }
 @media (max-width: 720px){
+  .admin-main{ margin-left:0; }
   .admin-sidebar{
     position:fixed; left:-280px; top:0; width:260px; z-index:50;
     transition:left .2s ease;
@@ -946,3 +1124,193 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 @media (prefers-reduced-motion: reduce){
   *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
 }
+
+/* ==========================================================
+   NEW — modernization pass
+   Additions below layer onto the existing "Ledger" system
+   rather than replacing it: same tokens, same stamp language.
+   Covers: skeleton loading, a richer empty state, an applicant
+   avatar chip, bulk-select + floating action tray, the
+   authenticated document viewer, and a dark "night audit" theme.
+   ========================================================== */
+
+/* ---------- skeleton loading rows ---------- */
+@keyframes skel-shimmer{
+  0%{ background-position:-120% 0; }
+  100%{ background-position:120% 0; }
+}
+.skel-bar{
+  display:inline-block; height:12px; border-radius:5px;
+  background:linear-gradient(90deg, var(--paper-dim) 25%, var(--line-soft) 50%, var(--paper-dim) 75%);
+  background-size:200% 100%;
+  animation:skel-shimmer 1.3s ease-in-out infinite;
+}
+.skel-row td{ padding-top:16px; padding-bottom:16px; }
+
+/* ---------- empty state (table row) ---------- */
+.empty-icon{ width:34px; height:34px; margin:0 auto 10px; color:var(--ink-faint); display:block; }
+.empty-state p{ margin:2px 0 0; }
+
+/* ---------- applicant cell: avatar chip ---------- */
+.cell-applicant{ display:flex; align-items:center; gap:11px; }
+.avatar-chip{
+  flex-shrink:0; width:34px; height:34px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--stamp-soft); color:var(--stamp-deep);
+  font-family:'Fraunces', serif; font-weight:600; font-size:12.5px;
+  border:1px solid var(--stamp-line);
+}
+
+/* ---------- select-all / row checkboxes ---------- */
+th.th-check, td.th-check{ width:36px; padding-left:22px; padding-right:0; }
+.row-check, #selectAll{
+  width:16px; height:16px; accent-color:var(--stamp-deep); cursor:pointer;
+}
+
+/* ---------- bulk action tray ----------
+   Floats above the page bottom once a row is checked — deliberately a
+   physical "tray" rather than an inline banner, so it reads as a tool the
+   admin picked up rather than a permanent fixture of the page. */
+.bulk-toolbar{
+  position:sticky; bottom:18px; left:0;
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  margin-top:14px; padding:12px 12px 12px 20px;
+  background:var(--chip); color:var(--chip-ink);
+  border-radius:999px;
+  box-shadow:var(--shadow);
+  animation:bulk-in .16s ease;
+}
+/* The [hidden] attribute only wins over a plain class if nothing later
+   in the sheet sets display on that class without guarding for it — this
+   rule was missing, so `bar.hidden = true` in JS had no visual effect and
+   the tray stayed on screen (as an empty "0 selected" bar) at all times. */
+.bulk-toolbar[hidden]{ display:none; }
+@keyframes bulk-in{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:translateY(0); } }
+.bulk-count{ font-family:'Martian Mono', monospace; font-size:11.5px; letter-spacing:0.03em; text-transform:uppercase; color:rgba(255,255,255,0.7); }
+.bulk-actions{ display:flex; gap:8px; }
+.bulk-toolbar .btn-outline{ background:transparent; border-color:rgba(255,255,255,0.25); color:var(--paper-card); }
+.bulk-toolbar .btn-outline:hover{ background:rgba(255,255,255,0.1); }
+
+/* ---------- document preview tiles ---------- */
+.doc-thumb-wrap{ position:relative; display:block; width:84px; height:84px; border-radius:10px; overflow:hidden; }
+.doc-thumb{
+  display:block; width:100%; height:100%; border-radius:10px; background-size:cover; background-position:center;
+  border:1px solid var(--line-soft); background-color:var(--paper-dim);
+}
+.doc-thumb-skel{ background-image:none !important; background:linear-gradient(90deg, var(--paper-dim) 25%, var(--line-soft) 50%, var(--paper-dim) 75%); background-size:200% 100%; animation:skel-shimmer 1.3s ease-in-out infinite; }
+.doc-thumb-error{ animation:none; background:var(--reject-soft); }
+.doc-thumb-error::after{ content:"⚠"; }
+.doc-thumb-zoom{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  background:rgba(36,30,23,0.35); color:#fff; opacity:0; transition:opacity .12s ease;
+}
+.doc-thumb-zoom svg{ width:18px; height:18px; }
+.doc-preview-item:hover .doc-thumb-zoom{ opacity:1; }
+.doc-preview-item:hover .doc-file-tile{ border-color:var(--stamp-line); }
+
+/* ---------- document viewer (authenticated) ---------- */
+.doc-viewer-overlay{
+  position:fixed; inset:0; z-index:80;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(20,16,11,0.72);
+  opacity:0; pointer-events:none; transition:opacity .15s ease;
+  padding:24px;
+}
+.doc-viewer-overlay.is-open{ opacity:1; pointer-events:auto; }
+.doc-viewer-box{
+  width:100%; max-width:720px; max-height:88vh;
+  background:var(--paper-card); border-radius:var(--radius-lg);
+  box-shadow:var(--shadow);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.doc-viewer-head{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:14px 18px; border-bottom:1px solid var(--line);
+}
+.doc-viewer-caption{ font-weight:700; font-size:14px; }
+.doc-viewer-actions{ display:flex; align-items:center; gap:8px; }
+.doc-viewer-body{ flex:1; min-height:280px; overflow:auto; display:flex; align-items:center; justify-content:center; background:var(--paper-dim); }
+.doc-viewer-img{ max-width:100%; max-height:78vh; display:block; margin:auto; }
+.doc-viewer-frame{ width:100%; height:78vh; border:none; }
+.doc-viewer-loading, .doc-viewer-fallback{
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  color:var(--ink-faint); font-size:13px; padding:40px;
+}
+.doc-viewer-fallback svg{ width:36px; height:36px; }
+.doc-viewer-fallback.is-error{ color:var(--reject); }
+
+/* ---------- theme toggle (sidebar footer) ---------- */
+.theme-toggle{
+  width:100%;
+  display:flex; align-items:center; gap:10px;
+  padding:9px 10px;
+  border-radius:9px;
+  font-size:12.5px; font-weight:700;
+  color:rgba(255,255,255,0.55);
+  transition:background .15s ease, color .15s ease;
+  margin-bottom:2px;
+}
+.theme-toggle:hover{ background:rgba(255,255,255,0.08); color:#fff; }
+.theme-toggle svg{ flex-shrink:0; }
+.theme-toggle .theme-icon-dark{ display:none; }
+[data-theme="dark"] .theme-toggle .theme-icon-light{ display:none; }
+[data-theme="dark"] .theme-toggle .theme-icon-dark{ display:inline-flex; }
+
+/* ---------- dark "night audit" theme ----------
+   Same ledger structure, inverted paper: the stub-rail becomes the
+   lightest surface instead of the darkest, kraft paper becomes a near-
+   black ink wash. Accent, approve/reject stamps unchanged so status
+   colors read identically in either mode. */
+[data-theme="dark"]{
+  /* "Slate Night" — a cooler, more neutral dark surface than the warm
+     kraft-brown of the light theme, so it reads like its own considered
+     mode rather than the light palette with the values flipped. */
+  --ink:#E9E4D8;
+  /* Was flipped to a near-white — lighter than --ink itself. --ink-2/
+     --chip are a *background* for raised dark chips (the active
+     role-tab icon, the active status pill, the bulk-action tray), so it
+     needs to stay on the dark end of the scale here, just a shade lifted
+     off the card surface for visible elevation — not inverted with the
+     text colors the way --ink itself correctly is. */
+  --ink-2:#3A3B36;
+  --chip:#3A3B36;
+  --chip-ink:#F1EDE0;
+  --ink-soft:#B7B2A4;
+  --ink-faint:#948E80;
+  --paper:#131315;
+  --paper-dim:#1A1A1C;
+  --paper-card:#1E1E20;
+  --paper-rail:#0A0A0B;
+  --line:rgba(233,228,216,0.15);
+  --line-soft:rgba(233,228,216,0.08);
+  --line-on-dark:rgba(255,255,255,0.12);
+  --shadow:0 20px 40px -20px rgba(0,0,0,0.8);
+  --shadow-sm:0 4px 14px -6px rgba(0,0,0,0.55);
+
+  /* ---- every value below exists because the light-mode color, reused
+     as-is, failed WCAG AA (4.5:1) as small text on a dark surface —
+     these are brightened/lightened so labels, badges, and role tags stay
+     legible instead of reading as a dim, muddy version of light mode.
+     (checked against both the plain card surface and each color's own
+     tinted "soft" chip background, since text sits on both.) ---- */
+  --stamp-deep:#F0B15F;          /* was #8F5C15 — badge/label text on stamp-soft, ~2.2:1 in the dark. Now ~6.4–8.8:1 */
+  --stamp-bright:#E9A23F;
+  --stamp-soft:rgba(224,149,46,0.18);
+  --slate:#B7AF9C;               /* was #8A8271 */
+  --slate-soft:rgba(183,175,156,0.14);
+  --role-buyer:#7FB3E0;          /* was #3E6690 — ~2.8:1 in the dark */
+  --role-buyer-soft:rgba(127,179,224,0.16);
+  --role-buyer-line:rgba(127,179,224,0.45);
+  --role-courier:#4FC7B8;        /* was #1F7A72 — ~3.2:1 in the dark */
+  --role-courier-soft:rgba(79,199,184,0.16);
+  --role-courier-line:rgba(79,199,184,0.45);
+  --role-logistics:#C79ACB;      /* was #6B4E71 — ~2.3:1 in the dark */
+  --role-logistics-soft:rgba(199,154,203,0.16);
+  --role-logistics-line:rgba(199,154,203,0.45);
+  --approve:#57C468;             /* was #3E7A46 */
+  --approve-soft:rgba(87,196,104,0.16);
+  --reject:#F28F80;              /* was #A3352A — ~1.7:1 in the dark */
+  --reject-soft:rgba(242,143,128,0.16);
+}
+[data-theme="dark"] .sidebar-user .avatar{ color:var(--stamp-bright); }
+[data-theme="dark"] .logout-btn{ color:rgba(233,228,216,0.55); }

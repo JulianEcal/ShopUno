@@ -4,6 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ShopUno — The corner market, now open in every pocket</title>
+<meta name="description" content="ShopUno bundles thousands of small local sellers into one storefront — one login to buy, sell, or deliver, with cash on delivery.">
+<meta name="theme-color" content="#211a10">
+<link rel="icon" type="image/png" href="/assets/img/favicon-32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/assets/img/favicon-64.png" sizes="64x64">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+
+<!-- Open Graph / social share -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ShopUno">
+<meta property="og:title" content="ShopUno — The corner market, now open in every pocket">
+<meta property="og:description" content="Thousands of small local stalls, one storefront. One login to buy, sell, or deliver — cash on delivery.">
+<meta property="og:image" content="/assets/img/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ShopUno — The corner market, now open in every pocket">
+<meta name="twitter:description" content="Thousands of small local stalls, one storefront. One login to buy, sell, or deliver.">
+<meta name="twitter:image" content="/assets/img/og-image.jpg">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -21,11 +40,7 @@
   <div class="fn-inner">
     <a href="/index.html" class="fn-logo">
       <span class="fn-seal" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M4.5 8.5h15l-1.4 10.3a2 2 0 0 1-2 1.7H7.9a2 2 0 0 1-2-1.7L4.5 8.5Z"/>
-          <path d="M8.5 8.5V6.8a3.5 3.5 0 0 1 7 0v1.7"/>
-          <path d="M9 12v3M15 12v3"/>
-        </svg>
+        <img src="/assets/img/logo-mark.png" alt="" width="22" height="22">
       </span>
       ShopUno
     </a>
@@ -33,6 +48,7 @@
     <nav class="fn-links">
       <a href="#categories" class="fn-link">Categories</a>
       <a href="#products" class="fn-link">Browse</a>
+      <a href="#how" class="fn-link">How it works</a>
       <a href="#announcements" class="fn-link">Announcements</a>
       <a href="#sell" class="fn-link">Sell</a>
     </nav>
@@ -41,14 +57,37 @@
       <a href="/login.html" class="fn-btn">Sign In</a>
       <a href="/login.html#signup" class="fn-btn is-primary">Sign Up</a>
     </div>
+
+    <button type="button" class="fn-burger" id="fnBurger" aria-label="Open menu" aria-expanded="false" aria-controls="fnMobileMenu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <div class="fn-mobile" id="fnMobileMenu" hidden>
+    <a href="#categories" class="fn-mobile-link">Categories</a>
+    <a href="#products" class="fn-mobile-link">Browse</a>
+    <a href="#how" class="fn-mobile-link">How it works</a>
+    <a href="#announcements" class="fn-mobile-link">Announcements</a>
+    <a href="#sell" class="fn-mobile-link">Sell</a>
+    <div class="fn-mobile-actions">
+      <a href="/login.html" class="fn-btn">Sign In</a>
+      <a href="/login.html#signup" class="fn-btn is-primary">Sign Up</a>
+    </div>
   </div>
 </header>
 
 <!-- ---------- hero ---------- -->
 <section class="hero">
+  <img src="/assets/img/logo-mark.png" alt="" class="hero-watermark" aria-hidden="true">
   <div class="wrap hero-inner">
     <div data-reveal>
-      <div class="eyebrow"><span class="stamp"></span> Every stall, one storefront</div>
+      <a href="/index.html" class="hero-brand">
+        <span class="hero-brand-seal" aria-hidden="true">
+          <img src="/assets/img/logo-mark.png" alt="">
+        </span>
+        <span class="hero-brand-word">ShopUno</span>
+      </a>
+      <div class="eyebrow"><span class="stamp"><img src="/assets/img/logo-mark.png" alt=""></span> Every stall, one storefront</div>
       <h1>The corner market,<br> now open in <em>every</em> pocket.</h1>
       <p class="lede">From weekend flea-market finds to next-day electronics — ShopUno bundles thousands of small sellers into one stall you can browse before your coffee gets cold.</p>
       <div class="hero-actions">
@@ -56,7 +95,6 @@
           Start browsing
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
-        <a href="#sell" class="btn-ghost-link">Become a seller</a>
       </div>
       <div class="hero-stats">
         <div><strong id="statProducts">—</strong><span>Items listed</span></div>
@@ -65,25 +103,43 @@
       </div>
     </div>
 
-    <div class="collage" data-reveal aria-hidden="true">
-      <div class="collage-card c1">
-        <div class="product-thumb" style="height:120px;border-radius:10px;margin-bottom:8px;">🛒</div>
-        <div class="cc-title">Fresh from local stalls</div>
+    <div class="collage" aria-hidden="true">
+      <!-- Each card reads as a torn receipt slip — extends the stamp/seal
+           motif from the nav + admin stamp-fx into the hero, instead of
+           dropping in stock icons or emoji. -->
+      <div class="ticket-card tc1" data-reveal data-reveal-delay="0">
+        <div class="tc-perf"></div>
+        <div class="tc-row"><span>ITEM</span><span>QTY</span></div>
+        <div class="tc-row tc-item"><span>Bagoong, 250g</span><span>x2</span></div>
+        <div class="tc-row tc-item"><span>Ube jam, homemade</span><span>x1</span></div>
+        <div class="tc-div"></div>
+        <div class="tc-row tc-total"><span>Local stall total</span><span>₱340.00</span></div>
       </div>
-      <div class="collage-card c2">
-        <div class="product-thumb" style="height:120px;border-radius:10px;margin-bottom:8px;background:rgba(251,247,238,.15);color:var(--paper);">📦</div>
-        <div class="cc-title">Delivered by ShopUno couriers</div>
+      <div class="ticket-card tc2" data-reveal data-reveal-delay="120">
+        <div class="tc-stamp-wrap">
+          <span class="stamp tc-stamp">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+          </span>
+          <div>
+            <div class="tc-label">Courier update</div>
+            <div class="tc-sub">Out for delivery — Los Baños</div>
+          </div>
+        </div>
+        <div class="tc-eta">ETA <strong>24 min</strong></div>
       </div>
-      <div class="collage-card c3">
-        <div class="product-thumb" style="height:120px;border-radius:10px;margin-bottom:8px;">⭐</div>
-        <div class="cc-title">Rated by real buyers</div>
+      <div class="ticket-card tc3" data-reveal data-reveal-delay="240">
+        <div class="tc-row tc-rating">
+          <span class="tc-stars">★★★★★</span><span>5.0</span>
+        </div>
+        <p class="tc-quote">"Same stall I buy from every Sunday — now it just finds me."</p>
+        <div class="tc-buyer">— verified buyer, Laguna</div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ---------- categories (live) ---------- -->
-<section class="section" id="categories">
+<section class="section cat-section" id="categories">
   <div class="wrap" data-reveal>
     <div class="section-head">
       <div>
@@ -91,10 +147,17 @@
         <p>Sign in to filter, search, and add to cart.</p>
       </div>
     </div>
-    <nav class="cat-scroller" id="catScroller" aria-label="Product categories">
-      <p class="state-msg">Loading categories…</p>
-    </nav>
   </div>
+  <!-- deliberately breaks out of .wrap's centered column — a ledger of
+       stall tags running edge-to-edge, echoing a market aisle rather
+       than a row of app feature-pills -->
+  <nav class="cat-scroller" id="catScroller" aria-label="Product categories">
+    <div class="skel skel-tag"></div>
+    <div class="skel skel-tag"></div>
+    <div class="skel skel-tag"></div>
+    <div class="skel skel-tag"></div>
+    <div class="skel skel-tag"></div>
+  </nav>
 </section>
 
 <!-- ---------- products (live) ---------- -->
@@ -108,7 +171,62 @@
       <a href="/login.html" class="section-link">Sign in to see more →</a>
     </div>
     <div class="product-grid" id="productGrid">
-      <p class="state-msg">Loading products…</p>
+      <div class="skel skel-card"></div>
+      <div class="skel skel-card"></div>
+      <div class="skel skel-card"></div>
+      <div class="skel skel-card"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- how it works ---------- -->
+<section class="section how-section" id="how">
+  <div class="wrap" data-reveal>
+    <div class="section-head">
+      <div>
+        <h2>How ShopUno works</h2>
+        <p>One account, three ways to use it.</p>
+      </div>
+    </div>
+    <div class="how-steps">
+      <div class="how-step">
+        <span class="how-num">01</span>
+        <h3>Sign up once</h3>
+        <p>One login covers buying, selling, and delivering — pick your role (or add another) any time from your dashboard.</p>
+      </div>
+      <div class="how-step">
+        <span class="how-num">02</span>
+        <h3>Browse &amp; order</h3>
+        <p>Search across every local stall on the platform, add to cart, and check out in a couple of taps.</p>
+      </div>
+      <div class="how-step">
+        <span class="how-num">03</span>
+        <h3>Cash on delivery</h3>
+        <p>A ShopUno courier brings it to your door. Pay when it arrives — no card required.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- testimonials ---------- -->
+<section class="section testi-section">
+  <div class="wrap" data-reveal>
+    <div class="testi-strip" id="testiStrip">
+      <div class="testi-card">
+        <span class="tc-stars">★★★★★</span>
+        <p>"I used to drive to three different palengkes for one grocery list. Now it's one cart."</p>
+        <div class="testi-name">Ma. Elena R. <span>· Buyer</span></div>
+      </div>
+      <div class="testi-card">
+        <span class="tc-stars">★★★★★</span>
+        <p>"Listed my stall in an afternoon. Orders started coming in the same week."</p>
+        <div class="testi-name">Jayson T. <span>· Seller</span></div>
+      </div>
+      <div class="testi-card">
+        <span class="tc-stars">★★★★★</span>
+        <p>"Routes are clear, payouts are on time. Easiest delivery gig I've had."</p>
+        <div class="testi-name">Ronnie C. <span>· Courier</span></div>
+      </div>
     </div>
   </div>
 </section>
@@ -126,18 +244,17 @@
   </div>
 </section>
 
-<!-- ---------- sell CTA ---------- -->
+<!-- ---------- sell CTA ----------
+     Deliberately no "create account" link here — the seller
+     onboarding flow is being reworked, so this stays a teaser,
+     not an entry point, until that's ready. ---------- -->
 <section class="sell-cta" id="sell">
   <div class="wrap">
     <div class="ticket" data-reveal>
       <div class="ticket-left">
-        <div class="eyebrow" style="color:var(--paper);opacity:.8;">For sellers</div>
+        <div class="eyebrow" style="color:var(--paper);opacity:.9;"><span class="stamp"><img src="/assets/img/logo-mark.png" alt=""></span> For sellers</div>
         <h2>Turn your stall into a storefront that never closes.</h2>
-        <p>Every ShopUno account starts as a buyer — apply to sell (or deliver) from your dashboard once you're signed up.</p>
-        <a href="/login.html#signup" class="btn-light">
-          Create your account
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </a>
+        <p>Seller onboarding is being rebuilt right now — sign in as a buyer today, and we'll let you know the moment applications open.</p>
       </div>
       <div class="ticket-right">
         <div class="big-num">3</div>
@@ -148,24 +265,35 @@
 </section>
 
 <footer>
+  <img src="/assets/img/logo-mark.png" alt="" class="footer-watermark" aria-hidden="true">
   <div class="wrap">
     <div class="footer-grid">
       <div class="footer-about">
-        <a href="/index.html" class="fn-logo">
+        <a href="/index.html" class="fn-logo footer-logo">
           <span class="fn-seal" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-              <path d="M4.5 8.5h15l-1.4 10.3a2 2 0 0 1-2 1.7H7.9a2 2 0 0 1-2-1.7L4.5 8.5Z"/>
-              <path d="M8.5 8.5V6.8a3.5 3.5 0 0 1 7 0v1.7"/>
-              <path d="M9 12v3M15 12v3"/>
-            </svg>
+            <img src="/assets/img/logo-mark.png" alt="" width="30" height="30">
           </span>
           ShopUno
         </a>
         <p>A marketplace built from thousands of small stalls — under one roof, one login, one delivery network.</p>
+        <form class="footer-signup" id="footerSignup">
+          <label for="footerEmail">New stalls, straight to your inbox</label>
+          <div class="footer-signup-row">
+            <input type="email" id="footerEmail" placeholder="you@email.com" required autocomplete="email">
+            <button type="submit" class="btn-light">Notify me</button>
+          </div>
+        </form>
       </div>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="/login.html">Help center</a>
+        <a href="/login.html">Returns &amp; refunds</a>
+        <a href="#sell">Sell on ShopUno</a>
+        <a href="/login.html">Terms &amp; privacy</a>
+      </nav>
     </div>
     <div class="footer-bottom">
       <span>© 2026 ShopUno. All rights reserved.</span>
+      <span class="footer-pay-mark">Cash on delivery</span>
     </div>
   </div>
 </footer>

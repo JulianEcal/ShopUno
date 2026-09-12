@@ -1,0 +1,2498 @@
+/* ==========================================================
+   ShopUno — Seller Console
+   Design system: "Pasar Market" — brought into the same visual
+   family as the storefront and landing page rather than a
+   bespoke enamelware theme of its own: ink/paper/chili/teal/gold,
+   Petrona for headings and headline numbers, Work Sans for
+   everything operational, Space Mono for tabular data and
+   eyebrow labels. Semantic color follows the storefront's own
+   convention — teal reads "good" (in stock, delivered, informational),
+   gold/amber reads "needs attention," chili reads "flagged" — so a
+   seller who has ever used the buyer side already knows what a
+   color means here before reading the label. Buttons are full pill
+   radius everywhere, matching the shared .btn language used across
+   landing/login/buyer/admin.
+   ========================================================== */
+
+:root{
+  --ink:#211a10;
+  --ink-soft:#4a4030;
+  --ink-faint:#8a7d64;
+  --paper:#fbf7ee;
+  --paper-dim:#f3ecdc;
+  --card:#ffffff;
+  --line:rgba(33,26,16,0.14);
+  --line-soft:rgba(33,26,16,0.08);
+
+  /* ---- signal (single brand accent — your gold seal color, the
+     one thing that's actually the logo, standing in for "the shop"
+     the way a wordmark color would) ---- */
+  --accent:#c9a961;
+  --accent-bright:#e3cf9e;
+  --accent-deep:#8a6a2e;
+  --accent-soft:rgba(201,169,97,0.16);
+  --accent-line:rgba(201,169,97,0.45);
+
+  /* ---- thrive (positive: revenue up, in stock, delivered) — kept
+     for revenue/stat-card language elsewhere on the dashboard. ---- */
+  --thrive:#4a4030;
+  --thrive-deep:#211a10;
+  --thrive-soft:rgba(33,26,16,0.05);
+
+  /* ---- go (positive status badges: in stock, live, delivered,
+     approved) — a muted forest green, warm enough to sit next to the
+     gold/chili palette instead of a cold Bootstrap green. ---- */
+  --go:#2f9c5e;
+  --go-deep:#1c7a43;
+  --go-soft:rgba(47,156,94,0.14);
+
+  /* ---- caution (needs attention: low stock, pending) — the
+     brand's warm gold, same family as pending/low-stock on the
+     storefront ---- */
+  --warn:#a3853f;
+  --warn-deep:#7a5813;
+  --warn-soft:rgba(163,133,63,0.16);
+  /* A more orange-leaning, higher-saturation amber used only where a
+     "needs attention" surface sits directly next to the brand-gold
+     signal card (dashboard's "Awaiting shipment" stat + the attention
+     banner) — --warn-soft alone reads too close to --accent-soft in
+     that context, so this pushes the hue further from gold without
+     introducing a whole new color family. */
+  --warn-strong-soft:rgba(196,138,30,0.20);
+  --warn-strong-line:rgba(196,138,30,0.4);
+
+  /* ---- flag (negative: flagged, rejected, out of stock) —
+     the storefront's chili red ---- */
+  --danger:#bf3b2c;
+  --danger-deep:#7a2419;
+  --danger-bright:#e4998a;
+  --danger-soft:rgba(191,59,44,0.10);
+
+  --slate:#8f8471;
+  --slate-soft:rgba(33,26,16,0.06);
+
+  /* ---- chip (the "signal" stat card and the report hero tile are
+     deliberately dark anchor surfaces in *both* themes — not `--ink`,
+     which is correct for normal text but flips to a light color in dark
+     mode. Fixed rather than overridden below so they read identically
+     either way. ---- */
+  --chip:#211a10;
+  --chip-ink:#fbf7ee;
+
+  --shadow:0 20px 44px -24px rgba(33,26,16,0.38);
+  --shadow-sm:0 1px 0 rgba(33,26,16,0.05);
+  --radius-lg:18px;
+  --radius-md:11px;
+
+  --rail-w:76px;
+  --topbar-h:68px;
+}
+
+/* ---------- dark theme ----------
+   Matches the admin console's neutral "Slate Night" dark theme rather
+   than a warm inversion of this page's own kraft/gold palette — a warm
+   near-black paired with the gold accent read as an all-over yellow
+   wash, so the paper/card/ink tokens below are the same cool neutral
+   values admin.css uses. Gold accent and the go/warn/danger signal
+   colors are brightened only as far as needed to clear WCAG AA on the
+   dark card surface — everything else keeps its light-mode identity so
+   a seller toggling back and forth never has to relearn what a color
+   means. */
+[data-theme="dark"]{
+  --ink:#E9E4D8;
+  --ink-soft:#B7B2A4;
+  --ink-faint:#948E80;
+  --paper:#131315;
+  --paper-dim:#1A1A1C;
+  --card:#1E1E20;
+  --line:rgba(233,228,216,0.15);
+  --line-soft:rgba(233,228,216,0.08);
+
+  --accent-deep:#E0B563;         /* was #8a6a2e — too dark to read as label text on --accent-soft here */
+
+  --thrive:#C7C0AC;              /* was #4a4030 — a dark ink tone, unreadable on a dark card */
+  --thrive-deep:#EAE4D5;
+  --thrive-soft:rgba(234,228,213,0.06);
+
+  --go:#4FBE7C;                  /* was #2f9c5e */
+  --go-deep:#7ED9A2;
+  --go-soft:rgba(79,190,124,0.16);
+
+  --warn:#D2AE5E;                /* was #a3853f */
+  --warn-deep:#E6C87F;
+  --warn-soft:rgba(210,174,94,0.16);
+  --warn-strong-soft:rgba(224,181,99,0.22);
+  --warn-strong-line:rgba(224,181,99,0.45);
+
+  --danger:#E4776A;              /* was #bf3b2c */
+  --danger-deep:#EFA398;
+  --danger-bright:#7a2419;
+  --danger-soft:rgba(228,119,106,0.14);
+
+  --slate:#9C9581;
+  --slate-soft:rgba(233,228,216,0.06);
+
+  --shadow:0 20px 40px -20px rgba(0,0,0,0.8);
+  --shadow-sm:0 4px 14px -6px rgba(0,0,0,0.55);
+}
+[data-theme="dark"] body.seller-page{
+  background-image: linear-gradient(rgba(19,19,21,0.94), rgba(19,19,21,0.94)), url("../img/background-pattern.jpg");
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+
+body.seller-page{
+  font-family:'Work Sans', sans-serif;
+  color:var(--ink);
+  background-image: linear-gradient(rgba(251,247,238,0.94), rgba(251,247,238,0.94)), url("../img/background-pattern.jpg");
+  background-size: auto, 900px;
+  background-repeat: repeat, repeat;
+  background-color: var(--paper);
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  font-variant-numeric:tabular-nums;
+  transition:background-color .15s ease, color .15s ease;
+}
+
+/* ---------- signature stamp (shared brand motif — dashed ring used
+   for the topbar eyebrow, empty-state seals, and cancelled-order
+   marks, same as the buyer storefront) ---------- */
+.stamp{
+  position:relative; display:inline-flex; align-items:center; justify-content:center;
+  border-radius:50%; border:1.5px dashed currentColor; flex-shrink:0;
+}
+.stamp::before{
+  content:""; position:absolute; inset:4px; border-radius:50%;
+  border:1px solid currentColor; opacity:.5;
+}
+.stamp img{ width:60%; height:60%; object-fit:contain; border-radius:0; }
+
+a{ color:inherit; text-decoration:none; }
+button{ font-family:inherit; cursor:pointer; background:none; border:none; color:inherit; }
+input, select, textarea{ font-family:inherit; font-size:14px; color:var(--ink); }
+[hidden]{ display:none !important; }
+
+.mono{ font-variant-numeric:tabular-nums; font-family:'Space Mono', monospace; }
+.display{ font-family:'Petrona', serif; }
+
+/* ================================================================
+   SHELL — icon rail (always visible, never expands) + a topbar that
+   carries the live "shop floor" numbers. Two distinct zones instead
+   of one nav that tries to do both.
+   ================================================================ */
+.seller-shell{ display:flex; min-height:100vh; }
+
+.seller-rail{
+  width:var(--rail-w); flex-shrink:0;
+  background:var(--card);
+  border-right:1px solid var(--line);
+  display:flex; flex-direction:column; align-items:center;
+  padding:18px 0 14px;
+  position:sticky; top:0; height:100vh; z-index:60;
+}
+.rail-brand{
+  width:40px; height:40px; border-radius:13px;
+  background:var(--chip); display:flex; align-items:center; justify-content:center;
+  margin-bottom:22px; flex-shrink:0;
+}
+.rail-brand img{ width:20px; height:20px; }
+
+.rail-nav{ display:flex; flex-direction:column; gap:6px; flex:1; align-items:center; width:100%; }
+.rail-link{
+  position:relative;
+  width:48px; height:48px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--ink-faint);
+  transition:background .15s ease, color .15s ease;
+}
+.rail-link svg{ width:20px; height:20px; }
+.rail-link:hover{ background:var(--paper-dim); color:var(--ink); }
+.rail-link.is-active{ background:var(--ink); color:var(--paper); }
+.rail-link .rail-dot{
+  position:absolute; top:6px; right:6px; width:8px; height:8px; border-radius:50%;
+  background:var(--accent); border:1.5px solid var(--card); display:none;
+}
+.rail-link .rail-dot.is-visible{ display:block; }
+.rail-link .rail-msg-badge{
+  position:absolute; top:2px; right:2px; min-width:16px; height:16px; padding:0 4px;
+  border-radius:999px; background:var(--accent); color:#fff; border:1.5px solid var(--card);
+  font-variant-numeric:tabular-nums; font-size:9.5px; font-weight:700; line-height:13px; text-align:center;
+}
+
+.rail-tip{
+  position:absolute; left:calc(100% + 10px); top:50%; transform:translateY(-50%) translateX(-4px);
+  background:var(--ink); color:var(--paper); font-size:12px; font-weight:600;
+  padding:6px 10px; border-radius:8px; white-space:nowrap;
+  opacity:0; pointer-events:none; transition:opacity .12s ease, transform .12s ease;
+  z-index:70;
+}
+.rail-link:hover .rail-tip{ opacity:1; transform:translateY(-50%) translateX(0); }
+
+.rail-foot{ display:flex; flex-direction:column; gap:10px; align-items:center; }
+.rail-theme-toggle{
+  position:relative;
+  width:38px; height:38px; border-radius:var(--radius-md);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--ink-faint);
+  transition:background .15s ease, color .15s ease;
+}
+.rail-theme-toggle svg{ width:16px; height:16px; }
+.rail-theme-toggle:hover{ background:var(--paper-dim); color:var(--ink); }
+.rail-theme-toggle .theme-icon-dark{ display:none; }
+[data-theme="dark"] .rail-theme-toggle .theme-icon-light{ display:none; }
+[data-theme="dark"] .rail-theme-toggle .theme-icon-dark{ display:inline-flex; }
+.rail-avatar{
+  width:38px; height:38px; padding:0; border-radius:50%;
+  background:var(--accent-soft); color:var(--accent-deep);
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:13px; font-family:'Petrona', serif;
+  overflow:hidden; cursor:pointer; border:2px dashed transparent;
+  transition:border-color .15s ease;
+}
+.rail-avatar img{ width:100%; height:100%; object-fit:cover; }
+.rail-avatar:hover{ border-color:var(--accent-line); }
+.rail-logout{
+  width:38px; height:38px; border-radius:var(--radius-md);
+  display:flex; align-items:center; justify-content:center; color:var(--ink-faint);
+}
+.rail-logout svg{ width:17px; height:17px; }
+.rail-logout:hover{ background:var(--danger-soft); color:var(--danger); }
+
+/* mobile off-canvas rail */
+.rail-backdrop{
+  display:none; position:fixed; inset:0; background:rgba(33,26,16,0.5); z-index:55;
+  opacity:0; pointer-events:none; transition:opacity .2s ease;
+}
+.rail-backdrop.is-open{ opacity:1; pointer-events:auto; }
+
+/* ---------- account popover (from rail avatar) ---------- */
+.rail-account{ position:relative; }
+.rail-account-pop{
+  position:absolute; left:calc(100% + 12px); bottom:0;
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius-md);
+  box-shadow:var(--shadow); min-width:190px; padding:8px;
+  opacity:0; pointer-events:none; transform:translateX(-6px);
+  transition:opacity .14s ease, transform .14s ease; z-index:70;
+}
+.rail-account-pop.is-open{ opacity:1; pointer-events:auto; transform:translateX(0); }
+.rail-account-who{ padding:8px 10px 10px; border-bottom:1px solid var(--line-soft); margin-bottom:6px; }
+.rail-account-who strong{ display:block; font-size:13px; }
+.rail-account-who span{ display:block; font-size:11.5px; color:var(--ink-faint); margin-top:1px; }
+.rail-account-item{
+  display:flex; align-items:center; gap:8px; width:100%;
+  padding:8px 10px; border-radius:7px; font-size:13px; text-align:left;
+}
+.rail-account-item svg{ width:15px; height:15px; flex-shrink:0; }
+.rail-account-item:hover{ background:var(--paper-dim); }
+.rail-account-item.is-danger{ color:var(--danger); }
+.rail-account-item.is-danger:hover{ background:var(--danger-soft); }
+
+/* ---------- main column ---------- */
+.seller-main{ flex:1; min-width:0; display:flex; flex-direction:column; }
+
+.seller-topbar{
+  height:var(--topbar-h); flex-shrink:0;
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding:0 28px; background:var(--card); border-bottom:1px solid var(--line);
+  position:sticky; top:0; z-index:40;
+}
+.topbar-left{ display:flex; align-items:center; gap:14px; min-width:0; }
+.topbar-burger{
+  display:none; width:36px; height:36px; border-radius:9px; align-items:center; justify-content:center;
+  color:var(--ink-soft); flex-shrink:0;
+}
+.topbar-burger:hover{ background:var(--paper-dim); }
+.topbar-eyebrow{
+  display:inline-flex; align-items:center; gap:7px;
+  font-family:'Space Mono', monospace; font-size:11px; font-weight:400;
+  letter-spacing:.06em; text-transform:uppercase; color:var(--accent-deep); margin-bottom:3px;
+}
+.topbar-eyebrow .stamp{ width:14px; height:14px; color:var(--accent-deep); }
+.topbar-left h1{
+  font-family:'Petrona', serif; font-size:20px; font-weight:600; margin:0; line-height:1.2;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+/* live "shop floor" stat chips — the topbar's whole reason to exist */
+.pulse-strip{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.pulse-chip{
+  display:flex; align-items:center; gap:8px;
+  padding:7px 13px 7px 11px; border-radius:999px; background:var(--paper-dim);
+  border:1px solid transparent;
+}
+.pulse-chip .pulse-icon{ width:15px; height:15px; color:var(--ink-soft); flex-shrink:0; }
+.pulse-chip .pulse-icon svg{ width:15px; height:15px; }
+.pulse-chip .pulse-val{ font-variant-numeric:tabular-nums; font-size:13px; font-weight:600; }
+.pulse-chip .pulse-label{ font-size:11.5px; color:var(--ink-faint); }
+.pulse-chip.is-warm{ background:var(--warn-soft); border-color:var(--warn-line, rgba(196,138,30,0.3)); }
+.pulse-chip.is-warm .pulse-icon, .pulse-chip.is-warm .pulse-val{ color:var(--warn-deep); }
+.pulse-chip.is-good .pulse-val{ color:var(--thrive-deep); }
+@media (max-width: 1080px){ .pulse-chip .pulse-label{ display:none; } }
+@media (max-width: 860px){ .pulse-strip{ display:none; } }
+/* the dashboard already surfaces these exact numbers in its stat grid,
+   bigger and with more context — showing them again in the topbar there
+   is pure noise, so it only earns its keep on every *other* page. */
+[data-page="dashboard"] .pulse-strip{ display:none; }
+
+/* Fills the gap the hidden pulse-strip leaves behind on the dashboard's
+   topbar. topbar-left grows to take that space, then a small live-status
+   cluster (appended in seller-dashboard.js) sits pushed to its right
+   edge — right where the pulse chips used to end — instead of a big
+   blank stretch between the title and the bell icon. A bare date string
+   alone still read as empty space with text in it, so it's paired with
+   an actual "shop is open" signal — the one piece of live status this
+   page was otherwise not showing anywhere. */
+[data-page="dashboard"] .topbar-left{ flex:1; min-width:0; }
+.dash-topbar-cluster{
+  margin-left:auto; padding-left:16px; flex-shrink:0;
+  display:flex; align-items:center; gap:12px;
+}
+.dash-topbar-status{
+  display:flex; align-items:center; gap:8px;
+  font-size:12.5px; font-weight:700; color:var(--go-deep);
+  padding:6px 12px 6px 10px; border-radius:999px;
+  background:var(--go-soft); border:1px solid rgba(47,156,94,0.28);
+}
+/* A slow, gentle pulse on the dot itself (not the whole pill) reads as
+   "this is a live status," not just a colored label — same idea as an
+   "online" indicator elsewhere, kept subtle enough to not be distracting
+   sitting in the topbar all day. */
+.dash-topbar-status-dot{
+  width:7px; height:7px; border-radius:50%; background:var(--go); flex-shrink:0;
+  box-shadow:0 0 0 3px var(--go-soft);
+  animation:dashStatusPulse 2.4s ease-in-out infinite;
+}
+@keyframes dashStatusPulse{
+  0%, 100%{ box-shadow:0 0 0 3px var(--go-soft); }
+  50%{ box-shadow:0 0 0 5px rgba(47,156,94,0.22); }
+}
+.dash-topbar-divider{ width:1px; height:16px; background:var(--line); flex-shrink:0; }
+.dash-topbar-date{
+  display:flex; align-items:center; gap:6px;
+  font-size:12.5px; color:var(--ink-soft); font-weight:600; white-space:nowrap;
+}
+.dash-topbar-date svg{ width:14px; height:14px; color:var(--ink-faint); flex-shrink:0; }
+@media (max-width:760px){ .dash-topbar-cluster{ display:none; } }
+
+.topbar-right{ display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.topbar-iconbtn{
+  position:relative; width:36px; height:36px; border-radius:9px;
+  display:flex; align-items:center; justify-content:center; color:var(--ink-soft);
+}
+.topbar-iconbtn svg{ width:17px; height:17px; }
+.topbar-iconbtn:hover{ background:var(--paper-dim); }
+/* Was a bare 7px dot in the brand gold — easy to miss, and didn't say
+   *how much* needed attention. A red, numbered badge (same "needs a
+   reaction" red used for flagged/danger states elsewhere) reads as
+   urgent at a glance, and the soft pulse ring draws the eye to it on
+   page load without looping forever and becoming noise. */
+.topbar-iconbtn .ping{
+  position:absolute; top:1px; right:1px; min-width:16px; height:16px; padding:0 4px;
+  display:flex; align-items:center; justify-content:center; box-sizing:border-box;
+  border-radius:999px; background:var(--danger); color:#fff;
+  font-size:10px; font-weight:800; font-family:'Space Mono', monospace; line-height:1;
+  border:2px solid var(--card);
+  animation:notifPingPulse 2.4s ease-out 3;
+}
+@keyframes notifPingPulse{
+  0%{ box-shadow:0 0 0 0 rgba(191,59,44,0.55); }
+  70%{ box-shadow:0 0 0 7px rgba(191,59,44,0); }
+  100%{ box-shadow:0 0 0 0 rgba(191,59,44,0); }
+}
+
+/* ---------- notification dropdown ---------- */
+.notif-wrap{ position:relative; }
+.notif-pop{
+  position:absolute; top:calc(100% + 10px); right:0; width:340px; max-width:calc(100vw - 32px);
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius-lg);
+  box-shadow:var(--shadow); opacity:0; visibility:hidden; transform:translateY(-6px);
+  transition:opacity .15s ease, transform .15s ease, visibility .15s; z-index:40;
+}
+.notif-pop.is-open{ opacity:1; visibility:visible; transform:translateY(0); }
+.notif-pop-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px; border-bottom:1px solid var(--line-soft);
+}
+.notif-pop-head h4{ font-family:'Petrona', serif; font-size:14px; font-weight:600; }
+.notif-pop-head span{ font-size:11.5px; color:var(--ink-faint); }
+.notif-list{ max-height:360px; overflow-y:auto; }
+.notif-item{
+  display:flex; gap:11px; align-items:flex-start; width:100%; text-align:left;
+  padding:12px 16px; border-bottom:1px solid var(--line-soft);
+}
+.notif-item:last-child{ border-bottom:none; }
+.notif-item:hover{ background:var(--paper); }
+.notif-item-icon{
+  width:30px; height:30px; border-radius:9px; flex-shrink:0; margin-top:1px;
+  display:flex; align-items:center; justify-content:center; background:var(--warn-soft); color:var(--warn-deep);
+}
+.notif-item-icon.is-info{ background:var(--accent-soft); color:var(--accent-deep); }
+.notif-item-icon svg{ width:14px; height:14px; }
+.notif-item-body{ min-width:0; }
+.notif-item-title{ font-size:13px; font-weight:600; line-height:1.4; }
+.notif-item-sub{ font-size:11.5px; color:var(--ink-faint); margin-top:2px; }
+.notif-empty{ padding:30px 16px; text-align:center; font-size:13px; color:var(--ink-faint); }
+
+/* ---------- selectable table rows / bulk action bar ---------- */
+.rowcheck{ width:34px !important; }
+.rowcheck input[type="checkbox"], .cell-check input[type="checkbox"]{
+  width:16px; height:16px; accent-color:var(--accent); cursor:pointer;
+}
+.bulk-bar{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:12px 22px; background:var(--accent-soft); border-bottom:1px solid var(--accent-line);
+}
+.bulk-bar-count{ font-size:13px; font-weight:700; color:var(--accent-deep); margin-right:2px; }
+.bulk-bar .filter-spacer{ flex:1; }
+.bulk-bar-clear{ font-size:12.5px; color:var(--ink-soft); text-decoration:underline; }
+
+/* ---------- pagination page-jump ---------- */
+.page-jump{ display:flex; align-items:center; gap:6px; }
+.page-jump input{
+  width:44px; text-align:center; border:1px solid var(--line); border-radius:7px;
+  padding:5px 4px; font-size:12.5px; background:var(--card);
+}
+
+/* ---------- onboarding checklist ---------- */
+.setup-card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius-lg);
+  padding:18px 22px; margin-bottom:20px; box-shadow:var(--shadow-sm);
+}
+.setup-card-head{ display:flex; align-items:center; gap:14px; margin-bottom:12px; }
+.setup-card-icon{
+  width:36px; height:36px; border-radius:10px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--accent-soft); color:var(--accent-deep);
+}
+.setup-card-icon svg{ width:17px; height:17px; }
+.setup-card-head .setup-card-titles{ flex:1; min-width:0; }
+.setup-card-head h3{ font-family:'Petrona', serif; font-size:15.5px; font-weight:600; }
+.setup-card-head p{ font-size:12px; color:var(--ink-faint); margin-top:2px; }
+.setup-dismiss{ font-size:12px; color:var(--ink-faint); flex-shrink:0; }
+.setup-dismiss:hover{ color:var(--ink); text-decoration:underline; }
+.setup-progress{ height:6px; border-radius:999px; background:var(--paper-dim); overflow:hidden; margin-bottom:14px; }
+.setup-progress-bar{ height:100%; background:var(--accent); border-radius:999px; transition:width .3s ease; }
+.setup-items{ display:flex; flex-direction:column; gap:2px; }
+.setup-item{
+  display:flex; align-items:center; gap:12px; padding:10px 4px; border-radius:9px;
+}
+.setup-item:hover{ background:var(--paper); }
+.setup-item-check{
+  width:22px; height:22px; border-radius:50%; border:2px solid var(--line); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; color:transparent;
+}
+.setup-item.is-done .setup-item-check{ background:var(--thrive); border-color:var(--thrive); color:#fff; }
+.setup-item.is-done .setup-item-check svg{ width:12px; height:12px; }
+.setup-item-body{ min-width:0; flex:1; display:flex; flex-direction:column; }
+.setup-item-title{ font-size:13.5px; font-weight:600; }
+.setup-item.is-done .setup-item-title{ color:var(--ink-faint); text-decoration:line-through; }
+.setup-item-sub{ font-size:11.5px; color:var(--ink-faint); margin-top:1px; }
+.setup-item-cta{ flex-shrink:0; }
+
+/* ---------- review-lock banner (product modal) ---------- */
+.review-banner{
+  display:flex; gap:12px; align-items:flex-start; padding:12px 14px; border-radius:var(--radius-md);
+  background:var(--warn-soft); color:var(--warn-deep); font-size:13px; margin-bottom:16px;
+}
+.review-banner.is-danger{ background:var(--danger-soft); color:var(--danger); }
+.review-banner svg{ width:16px; height:16px; flex-shrink:0; margin-top:1px; }
+.review-banner strong{ display:block; margin-bottom:2px; }
+.review-banner-actions{ margin-top:8px; }
+
+.seller-content{ padding:26px 28px 60px; max-width:1240px; width:100%; margin:0 auto; }
+
+/* Messages gets its own full-height "workbench" layout instead of the
+   default padded, max-width column every other seller page uses. A card
+   that only fills part of the viewport — rounded corners, a shadow, page
+   scroll around it — reads as a modal floating on the page, not a page
+   of its own. Content sits flush under the topbar and stretches to fill
+   the remaining viewport height; only the list and thread panes scroll
+   internally, the same shape any full-page chat app uses. Scoped to this
+   page only via body[data-page] — every other seller page keeps the
+   normal padded/centered/floating-card treatment. */
+body[data-page="messages"] .seller-content{
+  max-width:none; padding:0; display:flex; flex-direction:column;
+  height:calc(100vh - var(--topbar-h)); min-height:0; overflow:hidden;
+}
+body[data-page="messages"] .panel{
+  flex:1; min-height:0; display:flex; flex-direction:column;
+  border-radius:0; border:none; border-top:1px solid var(--line);
+  box-shadow:none; margin-bottom:0;
+}
+body[data-page="messages"] .panel-header{ flex-shrink:0; padding:8px 24px; }
+body[data-page="messages"] .panel-body.is-flush{ flex:1; min-height:0; display:flex; }
+@media (max-width:760px){
+  body[data-page="messages"] .seller-content{ height:calc(100vh - var(--topbar-h)); }
+  body[data-page="messages"] .panel-header{ padding:14px 16px; }
+}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  padding:10px 18px; border-radius:999px; font-size:13.5px; font-weight:700;
+  border:1px solid transparent; white-space:nowrap;
+  transition:background .15s ease, border-color .15s ease, color .15s ease, transform .12s ease, box-shadow .15s ease;
+}
+.btn-sm{ padding:7px 14px; font-size:12.5px; }
+.btn-primary{ background:var(--ink); color:var(--paper); }
+.btn-primary:hover{ background:var(--accent-deep); transform:translateY(-1px); box-shadow:0 10px 20px -12px rgba(33,26,16,.45); }
+.btn-primary:active:not(:disabled){ transform:translateY(0) scale(.97); box-shadow:none; }
+.btn-outline{ border-color:var(--line); color:var(--ink-soft); background:var(--card); }
+.btn-outline:hover{ border-color:var(--ink); color:var(--ink); }
+.btn-ghost{ color:var(--ink-soft); border-radius:var(--radius-md); }
+.btn-ghost:hover{ background:var(--paper-dim); color:var(--ink); }
+.btn-danger{ background:var(--danger-soft); color:var(--danger); }
+.btn-danger:hover{ background:var(--danger); color:#fff; }
+/* Reversible/lower-stakes actions (archive, deactivate, cancel) start
+   as a plain outline button and only reveal red on hover — so a table
+   full of rows doesn't read as "danger, danger, danger" by default.
+   True irreversible actions (permanent delete) stay solid .btn-danger. */
+.btn-caution{ border-color:var(--line); color:var(--ink-soft); background:var(--card); }
+.btn-caution:hover{ background:var(--danger-soft); border-color:var(--danger); color:var(--danger); }
+.btn:disabled{ opacity:0.5; cursor:not-allowed; transform:none; }
+.btn:active:not(:disabled){ transform:scale(.97); }
+.btn:focus-visible{ outline:2px solid var(--warn-deep); outline-offset:2px; }
+.btn-icon{
+  width:36px; height:36px; padding:0; border-radius:50%; border:1px solid var(--line); background:var(--card);
+}
+.btn-icon:hover{ border-color:var(--ink); }
+.btn-icon:active:not(:disabled){ transform:scale(.93); }
+.btn svg{ width:14px; height:14px; }
+
+/* ---------- sale quick-action (products table/grid row) ----------
+   A discount used to only surface once a seller had already opened
+   Manage and clicked over to its own tab — nothing on the row itself
+   hinted a sale tool even existed. This is a labeled button (not a bare
+   icon) sitting right next to Manage/Archive, so it reads as an action
+   ("Sale") at a glance instead of blending in, and doubles as a status
+   light via color: gold means a discount is configured but not currently
+   showing to buyers (scheduled or paused), chili means it's live right
+   now, and the plain accent-tinted default still calls out "there's a
+   sale tool here" rather than looking like a disabled/inactive icon. */
+.sale-tag-btn{
+  border-color:var(--accent-line); color:var(--accent-deep); background:var(--accent-soft);
+}
+.sale-tag-btn svg{ width:13px; height:13px; }
+.sale-tag-btn:hover{ border-color:var(--accent-deep); background:var(--accent-soft); }
+.sale-tag-btn.is-scheduled{ border-color:var(--warn-strong-line); color:var(--warn-deep); background:var(--warn-strong-soft); font-weight:800; }
+.sale-tag-btn.is-live{ border-color:var(--danger); color:#fff; background:var(--danger); font-weight:800; }
+.sale-tag-btn.is-live:hover{ background:var(--danger-deep); border-color:var(--danger-deep); }
+
+/* ---------- stat / KPI grid ---------- */
+.stat-grid{
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:22px;
+}
+@media (max-width: 980px){ .stat-grid{ grid-template-columns:repeat(2, 1fr); } }
+@media (max-width: 560px){ .stat-grid{ grid-template-columns:1fr; } }
+
+.stat-card{
+  background:var(--card); border:1px solid var(--line); border-left:3px solid var(--line);
+  border-radius:var(--radius-lg); padding:16px 18px; display:block;
+  transition:border-color .15s ease, transform .15s ease;
+}
+.stat-card:hover{ border-left-color:var(--ink-faint); }
+a.stat-card:hover{ transform:translateY(-1px); }
+.stat-card .stat-label{
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:12.5px; font-weight:600; color:var(--ink-faint); margin-bottom:10px;
+}
+/* A small colored badge instead of a bare, low-opacity glyph — the icon
+   used to be almost invisible at 15px/.7 opacity, so two cards with
+   different icons still read as "the same gray dot" from arm's length.
+   A filled circle gives every card a distinct color+shape signature
+   before the eye even reaches the label text. */
+.stat-card .stat-label .stat-icon{
+  width:28px; height:28px; border-radius:50%; flex-shrink:0; opacity:1; box-sizing:border-box;
+  display:flex; align-items:center; justify-content:center;
+  background:transparent; border:1.5px solid var(--line); color:var(--ink-faint);
+}
+.stat-card .stat-label .stat-icon svg{ width:15px; height:15px; }
+.stat-card .stat-value{ font-family:'Petrona', serif; font-size:28px; font-weight:600; line-height:1.1; }
+.stat-card .stat-sub{ font-size:12px; color:var(--ink-faint); margin-top:6px; }
+.stat-card .stat-sub b{ color:var(--ink); font-weight:700; }
+.stat-trend{
+  display:inline-flex; align-items:center; gap:4px; font-size:11.5px; font-weight:700;
+  margin-top:6px;
+}
+.stat-trend.is-up{ color:var(--go-deep); }
+.stat-trend.is-down{ color:var(--danger); }
+.stat-trend.is-flat{ color:var(--ink-faint); }
+
+/* The lead "orders today" card only earns a dark, high-contrast treatment
+   once there's actually something to celebrate — at zero it stays a calm,
+   quiet card like its neighbors instead of announcing a black void. */
+.stat-card.is-signal{ border-left-color:var(--accent-line); background:var(--accent-soft); }
+.stat-card.is-signal .stat-label{ color:var(--accent-deep); }
+.stat-card.is-signal .stat-label .stat-icon{ border-color:transparent; background:rgba(255,255,255,0.55); color:var(--accent-deep); }
+.stat-card.is-signal .stat-value{ color:var(--accent-deep); font-size:30px; }
+
+.stat-card.is-signal.is-active{ border-left-color:var(--accent); background:var(--chip); }
+.stat-card.is-signal.is-active .stat-label{ color:rgba(251,247,238,0.55); }
+.stat-card.is-signal.is-active .stat-label .stat-icon{ border-color:transparent; background:rgba(255,255,255,0.14); color:var(--accent-bright); }
+.stat-card.is-signal.is-active .stat-value{ color:#fff; font-size:32px; }
+.stat-card.is-signal.is-active .stat-sub{ color:rgba(251,247,238,0.6); }
+.stat-card.is-signal.is-active .stat-sub b{ color:#fff; }
+
+/* ---------- stat group headings (Today / Catalog / Reputation) ---------- */
+.stat-section{ margin-bottom:22px; }
+.stat-section-title{
+  font-family:'Petrona', serif; font-size:15px; font-weight:600;
+  color:var(--ink-soft); margin-bottom:10px;
+}
+.stat-section .stat-grid{ margin-bottom:0; grid-template-columns:repeat(3, 1fr); }
+@media (max-width: 980px){ .stat-section .stat-grid{ grid-template-columns:repeat(2, 1fr); } }
+@media (max-width: 560px){ .stat-section .stat-grid{ grid-template-columns:1fr; } }
+.stat-card-wide{ display:flex; flex-direction:column; max-width:320px; }
+
+.stat-card.is-warm{ border-left-color:var(--warn-strong-line); background:var(--warn-strong-soft); }
+.stat-card.is-warm .stat-label{ color:var(--warn-deep); }
+.stat-card.is-warm .stat-value{ color:var(--warn-deep); }
+.stat-card.is-warm .stat-label .stat-icon{ border-color:transparent; background:rgba(255,255,255,0.55); color:var(--warn-deep); }
+.stat-card.is-alert{ border-left-color:var(--danger); }
+.stat-card.is-alert .stat-value{ color:var(--danger); }
+.stat-card.is-good{ border-left-color:var(--thrive); }
+.stat-card.is-good .stat-value{ color:var(--thrive-deep); }
+
+/* Permanent category color (not just an "active" state) so each stat
+   card's kind is legible at a glance, same "color means something before
+   you read the label" convention the storefront badges already use.
+   The three "Today & this week" cards sit shoulder to shoulder and used
+   to differ only by a 3px border sliver — easy to miss and easy to
+   mistake for one another at a glance. A full color wash per card (gold /
+   green / amber, same trio the rest of the console already uses for
+   signal / good / needs-attention) makes each one legible without
+   reading the label first. */
+.stat-card.is-tone-go{ border-left-color:var(--go); background:var(--go-soft); }
+.stat-card.is-tone-go .stat-label{ color:var(--go-deep); }
+.stat-card.is-tone-go .stat-value{ color:var(--go-deep); }
+.stat-card.is-tone-go .stat-label .stat-icon{ border-color:transparent; background:rgba(255,255,255,0.6); color:var(--go-deep); }
+
+/* A calm, deliberately un-alarming neutral tone for cards that are just
+   reference numbers (e.g. "orders this week") — not good, not bad, just
+   informational, so it doesn't fight with revenue's gold or shipment's
+   amber for attention while still standing apart from the plain default
+   card via its own icon color. */
+.stat-card.is-tone-slate{ border-left-color:var(--ink-faint); }
+.stat-card.is-tone-slate .stat-label .stat-icon{ border-color:transparent; background:var(--paper-dim); color:var(--ink-soft); }
+
+/* ---------- shop health list (catalog + reputation, compact rows
+   instead of a wall of near-identical stat cards) ---------- */
+.health-list{ display:flex; flex-direction:column; }
+.health-row{
+  display:flex; align-items:center; gap:14px;
+  padding:14px 22px; border-bottom:1px solid var(--line-soft);
+}
+.health-row:last-child{ border-bottom:none; }
+a.health-row:hover{ background:var(--paper); }
+.health-icon{
+  width:36px; height:36px; border-radius:10px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--paper-dim); color:var(--ink-soft);
+}
+.health-icon svg{ width:17px; height:17px; }
+.health-body{ min-width:0; flex:1; display:flex; flex-direction:column; }
+.health-title{ font-size:13.5px; font-weight:700; }
+.health-sub{ font-size:12px; color:var(--ink-faint); margin-top:2px; }
+.health-value{
+  font-family:'Petrona', serif; font-size:22px; font-weight:600;
+  flex-shrink:0; font-variant-numeric:tabular-nums; min-width:2ch; text-align:right;
+}
+.health-row.is-warm .health-icon{ background:var(--warn-strong-soft); color:var(--warn-deep); }
+.health-row.is-warm .health-value{ color:var(--warn-deep); }
+.health-row.is-alert .health-icon{ background:var(--danger-soft, rgba(191,59,44,0.14)); color:var(--danger); }
+.health-row.is-alert .health-value{ color:var(--danger); }
+/* Was --thrive-soft here (rgba(33,26,16,0.05) — practically invisible on
+   the paper card). Average rating is the one clearly "good" row in this
+   list, so it gets the same green the rest of the console uses for
+   positive states instead of a near-transparent chip that reads as
+   "no tone at all" next to its warm/alert siblings. */
+.health-row.is-good .health-icon{ background:var(--go-soft); color:var(--go-deep); }
+.health-row.is-good .health-value{ color:var(--thrive-deep); }
+.health-row.is-info .health-icon{ background:var(--accent-soft); color:var(--accent-deep); }
+.health-row.is-info .health-value{ color:var(--accent-deep); }
+
+/* ---------- needs-attention banner ----------
+   Previously a small pill pinned at plain-text weight — easy to skim
+   past even though it's flagging something that actually needs action.
+   Given a full-width banner treatment matching the "all clear" state's
+   own banner below, so an urgent item and a reassuring one get equal
+   visual weight instead of the urgent one being the quieter of the two. */
+.attention-banner{
+  display:flex; align-items:flex-start; gap:13px;
+  padding:14px 18px; margin-bottom:18px; border-radius:var(--radius-lg);
+  background:var(--warn-strong-soft); border:1px solid var(--warn-strong-line);
+  border-left:4px solid var(--warn-deep);
+  box-shadow:0 16px 32px -22px var(--warn-strong-line);
+}
+.attention-banner-icon{
+  width:32px; height:32px; border-radius:9px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--warn-deep); color:var(--paper);
+}
+.attention-banner-icon svg{ width:16px; height:16px; }
+.attention-banner-body{ flex:1; min-width:0; padding-top:2px; }
+.attention-banner-title{ font-size:13px; font-weight:700; color:var(--warn-deep); margin-bottom:9px; }
+.attention-chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
+.attention-chip{
+  display:flex; align-items:center; gap:8px;
+  padding:7px 13px 7px 11px; border-radius:999px; background:var(--card); color:var(--warn-deep);
+  font-size:12.5px; font-weight:700; border:1px solid var(--warn-strong-line);
+}
+.attention-chip:hover{ border-color:var(--warn-deep); background:var(--warn-soft); }
+.attention-chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--warn-deep); flex-shrink:0; }
+.attention-chip .count{ font-variant-numeric:tabular-nums; }
+.attention-empty{
+  display:flex; align-items:center; gap:12px; margin-bottom:18px;
+  padding:14px 18px; border-radius:var(--radius-lg); background:var(--thrive-soft); color:var(--thrive-deep);
+  font-size:13px; font-weight:600; border:1px solid transparent;
+}
+.attention-empty svg{ width:15px; height:15px; flex-shrink:0; }
+
+/* ---------- panel / card ---------- */
+.panel{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius-lg);
+  overflow:hidden; margin-bottom:20px; box-shadow:var(--shadow-sm);
+}
+.panel-header{
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  padding:18px 22px; border-bottom:1px solid var(--line-soft);
+}
+.panel-header h3{ font-family:'Petrona', serif; font-size:16px; font-weight:600; }
+.panel-header p{ font-size:12.5px; color:var(--ink-faint); margin-top:2px; }
+.panel-body{ padding:18px 22px; }
+.panel-body.is-flush{ padding:0; }
+
+/* A small colored icon chip in front of a panel's title — used on the
+   dashboard's three main-column panels so "Sales trend" / "Top products"
+   / "Recent activity" read as distinct sections at a glance instead of
+   three identically-styled white boxes stacked with only their text to
+   tell them apart. Same gold/amber/green trio used everywhere else on
+   this page for signal/attention/good. */
+.panel-title-group{ display:flex; align-items:flex-start; gap:12px; min-width:0; }
+.panel-title-icon{
+  width:32px; height:32px; border-radius:9px; flex-shrink:0; margin-top:1px;
+  display:flex; align-items:center; justify-content:center;
+}
+.panel-title-icon svg{ width:16px; height:16px; }
+.panel-title-icon.tone-gold{ background:var(--accent-soft); color:var(--accent-deep); }
+.panel-title-icon.tone-amber{ background:var(--warn-soft); color:var(--warn-deep); }
+.panel-title-icon.tone-green{ background:var(--go-soft); color:var(--go-deep); }
+
+/* ---------- quick actions ---------- */
+.quick-actions{ display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; }
+@media (max-width: 700px){ .quick-actions{ grid-template-columns:1fr; } }
+.quick-action{
+  display:flex; align-items:center; gap:12px;
+  padding:14px 16px; border-radius:var(--radius-md); border:1px solid var(--line);
+  background:var(--paper); transition:border-color .15s ease, background .15s ease;
+}
+.quick-action:hover{ border-color:var(--accent-line); background:var(--accent-soft); }
+.quick-action-icon{
+  width:38px; height:38px; border-radius:10px; background:var(--card); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center; color:var(--accent-deep); flex-shrink:0;
+}
+.quick-action-icon svg{ width:18px; height:18px; }
+.quick-action-body{ min-width:0; }
+.quick-action-title{ font-size:13.5px; font-weight:700; }
+.quick-action-sub{ font-size:11.5px; color:var(--ink-faint); margin-top:1px; }
+
+/* ---------- dashboard-only wide layout ----------
+   The dashboard is the one seller page that breaks out of the shared
+   1240px centered column — it earns the extra width with a chart-first
+   two-column layout, everywhere else stays as-is. */
+body[data-page="dashboard"] .seller-content{ max-width:none; }
+
+/* Quick actions collapsed into a slim strip of pills instead of the
+   boxed panel other pages might use, so it doesn't compete with the
+   chart for vertical space. */
+/* Equal-width buttons spanning the full row instead of a few small
+   pills hugging the left edge — on the dashboard's full-width layout,
+   left-aligned pills left the rest of the row as bare space. Grid
+   columns give each action a real, substantial target and use the
+   width the row already has. */
+.dash-quickstrip{ display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:20px; }
+.dash-quick-item{
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  padding:12px 16px; border-radius:999px; border:1px solid var(--line);
+  background:var(--card); font-size:13px; font-weight:700; color:var(--ink-soft);
+  transition:border-color .15s ease, background .15s ease, color .15s ease;
+}
+@media (max-width:760px){ .dash-quickstrip{ grid-template-columns:1fr; } }
+.dash-quick-item:hover{ border-color:var(--accent-line); background:var(--accent-soft); color:var(--ink); }
+/* A faint permanent tint per action (same hue as its icon) instead of a
+   plain white pill that only differs by its 26px icon — at rest, the two
+   secondary actions used to be nearly indistinguishable white buttons;
+   now "ship" reads warm/amber and "voucher" reads green before you even
+   get to the icon or label. Kept faint so it doesn't compete with the
+   black primary pill for attention. */
+.dash-quick-item.tone-amber{ background:var(--warn-soft); border-color:var(--warn-strong-line); }
+.dash-quick-item.tone-amber:hover{ background:var(--warn-strong-soft); border-color:var(--warn-deep); color:var(--warn-deep); }
+.dash-quick-item.tone-green{ background:var(--go-soft); border-color:rgba(47,156,94,0.35); }
+.dash-quick-item.tone-green:hover{ background:rgba(47,156,94,0.24); border-color:var(--go-deep); color:var(--go-deep); }
+/* The one action a seller is most likely to take first gets a filled,
+   higher-contrast treatment (same ink/paper pairing as .btn-primary
+   elsewhere) so it reads as *the* thing to do, not just one of three
+   equally-weighted pills — the other two stay as plain outline actions. */
+.dash-quick-item.is-primary{
+  background:var(--ink); border-color:var(--ink); color:var(--paper);
+}
+.dash-quick-item.is-primary .dq-icon{ background:rgba(255,255,255,0.14); color:var(--accent-bright); }
+.dash-quick-item.is-primary:hover{ background:var(--accent-deep); border-color:var(--accent-deep); color:#fff; }
+.dq-icon{
+  width:26px; height:26px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--paper-dim); color:var(--ink-soft);
+}
+.dq-icon svg{ width:14px; height:14px; }
+.dq-icon.tone-gold{ background:var(--accent-soft); color:var(--accent-deep); }
+.dq-icon.tone-amber{ background:var(--warn-soft); color:var(--warn-deep); }
+.dq-icon.tone-green{ background:var(--go-soft); color:var(--go-deep); }
+.dq-label{ white-space:nowrap; }
+
+/* 2/3 + 1/3 split: the chart-and-widgets column stays dominant, the
+   compact stat cards + shop health sit in the narrower side column.
+   align-items:stretch (rather than start) plus the flex chain below
+   lets the side column match the main column's full height instead of
+   stopping short and leaving the two columns finishing at different
+   points — the Shop health list stretches to close that gap itself
+   (see below) instead of leaving bare space under it. */
+.dash-grid{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,2fr); gap:20px; align-items:stretch; }
+.dash-col{ min-width:0; display:flex; flex-direction:column; }
+@media (max-width:1080px){
+  .dash-grid{ grid-template-columns:1fr; }
+  .dash-col{ display:block; }
+}
+
+/* Stacked single-column stat cards in the narrow side column — the
+   3-across grid used elsewhere would be cramped at this width. */
+.dash-col-side .stat-section .stat-grid{ grid-template-columns:1fr; }
+
+/* #statGrid holds both the "Today & this week" stat-section and the
+   Shop health panel underneath it. Only the panel (last child) grows to
+   soak up the leftover height once the column is stretched to match the
+   main column — the stat cards above stay their natural size. */
+#statGrid{ display:flex; flex-direction:column; flex:1; min-height:0; }
+#statGrid > .panel:last-child{ flex:1; display:flex; flex-direction:column; margin-bottom:0; }
+#statGrid > .panel:last-child .panel-body{ flex:1; display:flex; flex-direction:column; min-height:0; }
+#statGrid > .panel:last-child .health-list{ flex:0 0 auto; }
+/* Rather than stretching the health rows apart to swallow the leftover
+   height (which reads as odd, uneven gaps), a "view all" footer grows to
+   fill it instead — real, clickable content closing the gap between the
+   two columns instead of blank space. */
+.health-list-foot{
+  flex:1; display:flex; align-items:center; justify-content:center;
+  min-height:44px; border-top:1px solid var(--line-soft);
+}
+.health-list-foot a{ font-size:12.5px; font-weight:700; color:var(--accent-deep); display:inline-flex; align-items:center; gap:5px; }
+.health-list-foot a:hover{ text-decoration:underline; }
+.health-list-foot svg{ width:13px; height:13px; }
+@media (max-width:1080px){
+  #statGrid{ display:block; flex:none; }
+  #statGrid > .panel:last-child{ display:block; }
+  #statGrid > .panel:last-child .panel-body{ display:block; }
+  .health-list-foot{ min-height:0; padding:14px 0; }
+}
+
+/* ---------- overview strip ----------
+   The one unified "state of the shop today" row (revenue, orders today,
+   orders this week, awaiting shipment) — sits full-width above the
+   two-column layout so it isn't squeezed into the narrow side column,
+   and so it doesn't duplicate the same figures a nested revenue strip
+   used to repeat inside the chart panel below. */
+.dash-overview-grid{ margin-bottom:20px; }
+
+/* ---------- activity feed ---------- */
+.activity-list{ position:relative; display:flex; flex-direction:column; padding:4px 0; }
+.activity-row{
+  display:flex; gap:13px; padding:13px 22px; border-bottom:1px solid var(--line-soft);
+}
+.activity-row:last-child{ border-bottom:none; }
+.activity-row:hover{ background:var(--paper); }
+.activity-icon{
+  width:34px; height:34px; border-radius:10px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; background:var(--paper-dim); color:var(--ink-soft);
+}
+.activity-icon svg{ width:16px; height:16px; }
+.activity-icon.type-order{ background:var(--accent-soft); color:var(--accent-deep); }
+.activity-icon.type-rating{ background:var(--thrive-soft); color:var(--thrive-deep); }
+.activity-body{ min-width:0; flex:1; }
+.activity-summary{ font-size:13.5px; font-weight:600; line-height:1.4; }
+.activity-time{ font-size:11.5px; color:var(--ink-faint); margin-top:3px; font-variant-numeric:tabular-nums; }
+
+/* ---------- ratings / customer feedback ---------- */
+.rr-stars{ display:inline-flex; gap:2px; flex-shrink:0; }
+.rr-star{ width:15px; height:15px; color:var(--line); }
+.rr-star.is-filled{ color:var(--warn); }
+.rr-star svg{ width:100%; height:100%; }
+.rr-stars-xs .rr-star{ width:12px; height:12px; }
+
+.rr-list{ display:flex; flex-direction:column; }
+.rr-row{ padding:16px 22px; border-bottom:1px solid var(--line-soft); }
+.rr-row:last-child{ border-bottom:none; }
+.rr-row:hover{ background:var(--paper); }
+.rr-row-head{ display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+.rr-from{ font-size:13px; font-weight:700; color:var(--ink); }
+.rr-order{ font-size:11.5px; font-variant-numeric:tabular-nums; color:var(--ink-faint); text-decoration:none; }
+.rr-order:hover{ color:var(--accent-deep); text-decoration:underline; }
+.rr-time{ font-size:11.5px; color:var(--ink-faint); margin-left:auto; font-variant-numeric:tabular-nums; }
+.rr-feedback{ font-size:13px; color:var(--ink-soft); line-height:1.55; margin-top:8px; }
+.rr-feedback.is-empty{ color:var(--ink-faint); font-style:italic; }
+
+/* ---------- badges ----------
+   Flat paper-dim chip for every status (kept as-is). The signal lives
+   in the dot + text color, following a plain traffic-light read: green
+   for "good," gold for "needs a look," red for "needs action now,"
+   gray for "inactive" — so status is legible at a glance. */
+.badge{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 10px 4px 9px; border-radius:999px; font-size:11.5px; font-weight:700;
+  text-transform:capitalize;
+  background:var(--paper-dim); color:var(--ink-soft); border:1px solid var(--line-soft);
+}
+.badge::before{ content:""; width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.badge-seller{ color:var(--ink-soft); }
+.badge-active, .badge-delivered, .badge-approved, .badge-in_stock{ color:var(--go-deep); }
+.badge-pending, .badge-to_ship, .badge-low_stock, .badge-warn,
+.badge-in_transit, .badge-out_for_delivery{ color:var(--accent-deep); }
+.badge-suspended, .badge-rejected, .badge-cancelled, .badge-out_of_stock, .badge-flagged{ color:var(--danger); }
+.badge-deactivated, .badge-archived{ color:var(--slate); }
+/* Discount states (Products table price cell + the Discount tab's status chip) */
+.badge-on_sale{ color:var(--danger); background:var(--danger-soft); border-color:rgba(191,59,44,0.28); font-weight:800; }
+.badge-scheduled{ color:var(--accent-deep); }
+.badge-paused, .badge-expired{ color:var(--slate); }
+
+/* ---------- discount pricing (Products table/grid price cell) ----------
+   Shows the live sale price with the original struck through underneath,
+   plus a small "-20%" chip — same "current price is the headline, old
+   price is a faded footnote" hierarchy Shopee-style storefronts use, so a
+   seller scanning the table can spot which listings are on sale at a glance. */
+.price-disc{ display:flex; flex-direction:column; gap:1px; line-height:1.3; }
+.price-disc-now{ font-weight:700; color:var(--danger); }
+.price-disc-orig{ color:var(--ink-faint); text-decoration:line-through; font-size:11px; }
+.price-tag-orig{ color:var(--ink-faint); text-decoration:line-through; font-size:11px; margin-left:4px; }
+.price-disc-pct{
+  display:inline-flex; align-items:center; margin-left:7px;
+  padding:1.5px 7px; border-radius:999px; background:var(--danger-soft); color:var(--danger);
+  font-size:10.5px; font-weight:700; letter-spacing:.02em; vertical-align:1px;
+}
+
+/* ---------- Discount tab (product manage modal) ---------- */
+.disc-panel{ display:flex; flex-direction:column; gap:18px; max-width:520px; }
+.disc-intro{ font-size:13px; color:var(--ink-soft); line-height:1.5; }
+
+.disc-summary{
+  display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  padding:16px 18px; border-radius:14px; background:var(--danger-soft); border:1px solid rgba(191,59,44,0.22);
+}
+.disc-summary-figs{ display:flex; flex-direction:column; gap:3px; }
+.disc-summary-price{ font-size:20px; font-weight:700; color:var(--ink); font-family:'Petrona',serif; }
+.disc-summary-orig{ font-size:12.5px; color:var(--ink-faint); text-decoration:line-through; }
+.disc-summary-meta{ font-size:12px; color:var(--ink-soft); margin-top:4px; }
+.disc-summary-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+
+.disc-type-toggle{ display:flex; gap:8px; }
+.disc-type-btn{
+  flex:1; padding:11px 12px; border-radius:10px; border:1.5px solid var(--line);
+  background:var(--card); cursor:pointer; font-size:13px; font-weight:600; color:var(--ink-soft);
+  transition:border-color .15s, background .15s, color .15s; text-align:center;
+}
+.disc-type-btn:hover{ border-color:var(--accent-line); }
+.disc-type-btn.is-active{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent-deep); }
+
+.disc-value-row{ display:flex; align-items:center; gap:10px; }
+.disc-value-row input{ flex:1; }
+.disc-value-suffix{ font-weight:700; color:var(--ink-soft); font-size:14px; min-width:18px; }
+
+/* Stacked, not side-by-side — same reasoning as the voucher edit modal:
+   a datetime-local input needs more room than a 440px modal's two-column
+   split can spare, or the native picker text gets clipped. */
+.disc-schedule-grid{ display:grid; grid-template-columns:1fr; gap:12px; }
+.disc-schedule-grid > div{ min-width:0; }
+.disc-schedule-grid input{ width:100%; min-width:0; box-sizing:border-box; }
+.disc-hint{ font-size:11.5px; color:var(--ink-faint); margin-top:4px; }
+
+.disc-empty{
+  display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px;
+  padding:28px 20px; border-radius:14px; border:1.5px dashed var(--line); color:var(--ink-faint);
+}
+.disc-empty svg{ width:28px; height:28px; color:var(--accent); }
+
+/* ---------- status dot (Live/Draft/Archived on the Products table) ----------
+   Plain dot + label, no pill background — deliberately different from
+   .badge so this column reads as distinct from the Stock column's pill
+   sitting right next to it, rather than two identical-shaped chips. */
+.status-dot{
+  display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600;
+  text-transform:capitalize; color:var(--ink-soft);
+}
+.status-dot::before{ content:""; width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.status-dot-active{ color:var(--go-deep); }
+.status-dot-pending{ color:var(--accent-deep); }
+.status-dot-archived{ color:var(--slate); }
+
+/* ---------- empty / skeleton ---------- */
+.empty-state{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:40px 20px; color:var(--ink-faint); font-size:13.5px;
+}
+.empty-icon{ width:34px; height:34px; margin:0 auto 10px; color:var(--ink-faint); display:block; }
+.empty-title{ font-weight:700; color:var(--ink-soft); margin-bottom:3px; font-size:14px; }
+.empty-state p{ margin:2px 0 0; }
+
+.skel-bar{
+  display:inline-block; height:10px; border-radius:5px;
+  background:linear-gradient(90deg, var(--paper-dim) 25%, var(--line-soft) 50%, var(--paper-dim) 75%);
+  background-size:200% 100%; animation:skel-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes skel-shimmer{ 0%{ background-position:200% 0; } 100%{ background-position:-200% 0; } }
+
+/* ---------- toast ---------- */
+.toast-stack{
+  position:fixed; bottom:22px; right:22px; z-index:200;
+  display:flex; flex-direction:column-reverse; gap:8px; align-items:flex-end;
+}
+.toast{
+  display:flex; align-items:center; gap:10px;
+  background:var(--ink); color:var(--paper); font-size:13px; font-weight:600;
+  padding:12px 16px; border-radius:var(--radius-md); box-shadow:var(--shadow);
+  border-left:3px solid var(--accent); min-width:220px; max-width:360px;
+}
+.toast-mark{ flex-shrink:0; font-size:13px; }
+.toast-msg{ flex:1; padding-top:1px; }
+.toast.is-error{ background:var(--danger); border-left-color:#e8b3ac; }
+.toast.is-success{ background:var(--ink); border-left-color:var(--accent); }
+.toast-action{ text-decoration:underline; flex-shrink:0; font-weight:700; }
+
+/* ---------- modal ---------- */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(33,26,16,0.5); z-index:150;
+  display:flex; align-items:center; justify-content:center; padding:20px;
+  opacity:0; pointer-events:none; transition:opacity .18s ease;
+  overflow:hidden;
+}
+/* The icon rail is always visible (never off-canvas) above 860px and sits
+   on top of the overlay, eating into the left side of the viewport. Center
+   the modal over the actual content area — viewport minus the rail —
+   rather than the full window, or it reads as pushed too far left,
+   especially now that wider modals (is-wide/is-xwide) make the offset
+   more noticeable. Below 860px the rail collapses off-canvas (see the
+   RESPONSIVE block) and takes no layout space, so plain centering is right. */
+@media (min-width:861px){
+  .modal-overlay{ padding-left:calc(20px + var(--rail-w)); }
+}
+.modal-overlay.is-open{ opacity:1; pointer-events:auto; }
+.modal-box{
+  background:var(--card); border-radius:var(--radius-lg); width:100%; max-width:440px;
+  box-shadow:var(--shadow); transform:translateY(8px) scale(.98); transition:transform .18s ease;
+  max-height:88vh; overflow-y:auto; overflow-x:hidden;
+}
+.modal-overlay.is-open .modal-box{ transform:translateY(0) scale(1); }
+.modal-box.is-wide{ max-width:680px; }
+.modal-header{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; padding:20px 24px 14px; }
+.modal-header h3{ font-family:'Petrona', serif; font-weight:600; font-size:18px; }
+.modal-header p{ font-size:12.5px; color:var(--ink-faint); margin-top:4px; }
+.modal-close{ width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--ink-faint); flex-shrink:0; }
+.modal-close:hover{ background:var(--paper-dim); color:var(--ink); }
+.modal-body{ padding:4px 24px 8px; }
+
+.msg-compose-product{
+  display:flex; align-items:center; gap:10px; padding:9px 10px; margin-bottom:14px;
+  background:var(--paper); border:1px solid var(--line); border-radius:12px;
+}
+.msg-compose-product img{ width:36px; height:36px; border-radius:8px; object-fit:cover; flex-shrink:0; }
+.msg-compose-product-noimg{
+  width:36px; height:36px; border-radius:8px; flex-shrink:0; background:var(--accent-soft); color:var(--accent-deep);
+  display:flex; align-items:center; justify-content:center; font-family:'Petrona', serif; font-weight:700; font-size:14px;
+}
+.msg-compose-product-name{ font-size:12.5px; font-weight:600; color:var(--ink); display:flex; flex-direction:column; gap:2px; }
+.msg-compose-product-variation{ font-size:11px; font-weight:500; color:var(--ink-faint); }
+.modal-footer{ display:flex; justify-content:flex-end; gap:10px; padding:18px 24px 24px; }
+
+/* ---------- form fields ---------- */
+.field-group{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+.field-group label{ font-size:12.5px; font-weight:700; }
+.field-group .hint{ font-size:11.5px; color:var(--ink-faint); font-weight:400; margin-top:-2px; }
+.field-optional{ font-weight:400; color:var(--ink-faint); text-transform:none; }
+.field-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media (max-width:480px){ .field-row{ grid-template-columns:1fr; } }
+.field-group input, .field-group select, .field-group textarea{
+  border:1px solid var(--line); border-radius:9px; padding:10px 12px; background:var(--paper);
+}
+.field-group textarea{ resize:vertical; min-height:90px; font-family:'Work Sans', sans-serif; }
+.field-group input:focus, .field-group select:focus, .field-group textarea:focus{
+  outline:none; border-color:var(--accent-line); box-shadow:0 0 0 3px var(--accent-soft);
+}
+.field-error{ font-size:11.5px; color:var(--danger); font-weight:600; }
+
+.spinner{
+  width:15px; height:15px; border-radius:50%;
+  border:2px solid rgba(255,255,255,0.35); border-top-color:#fff;
+  animation:spin .6s linear infinite; display:inline-block;
+}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+/* Scoped loading-state toggle for buttons built with a <span class="btn-label">
+   + <span class="spinner spinner-inline"> pair (see account page forms) — kept
+   separate from the bare `.spinner` other seller pages swap in via innerHTML,
+   so this doesn't hide those. */
+.btn .spinner-inline{ display:none; }
+.btn.is-loading .btn-label{ opacity:0; position:absolute; }
+.btn.is-loading{ position:relative; }
+.btn.is-loading .spinner-inline{ display:inline-block; }
+
+.text-muted{ color:var(--ink-faint); }
+
+/* ---------- filter bar (search / dropdown filters above a table) ---------- */
+.filter-bar{
+  display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+  padding:14px 22px; border-bottom:1px solid var(--line-soft);
+}
+.filter-bar input[type="text"], .filter-bar input[type="date"], .filter-bar select{
+  border:1px solid var(--line); border-radius:9px; padding:9px 12px; background:var(--paper); font-size:13px;
+  min-width:0;
+}
+.filter-bar input[type="date"]{ min-width:132px; }
+/* Custom chevron so the dropdown matches the rest of the pill/rounded
+   language instead of falling back to the browser's native arrow. */
+.filter-bar select{
+  min-width:128px; appearance:none; -webkit-appearance:none;
+  padding-right:30px; cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238a7d64' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center;
+}
+.filter-bar select:hover{ border-color:var(--ink); }/* Search input reuses the same leading-icon treatment as .msg-search
+   (messages page) so search reads consistently across the console. */
+.filter-bar .msg-search{ flex:1; min-width:220px; }
+.filter-bar .msg-search input{ border-radius:9px; }
+@media (max-width:640px){
+  .filter-bar .msg-search{ flex-basis:100%; }
+}
+.filter-spacer{ flex:1; }
+
+/* ---------- view toggle (list / grid) ---------- */
+.view-toggle{ display:flex; gap:2px; padding:3px; border-radius:10px; background:var(--paper-dim); flex-shrink:0; }
+.view-toggle-btn{
+  width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+  color:var(--ink-faint); background:none; border:none; cursor:pointer;
+}
+.view-toggle-btn svg{ width:16px; height:16px; }
+.view-toggle-btn:hover{ color:var(--ink); }
+.view-toggle-btn.is-active{ background:var(--card); color:var(--ink); box-shadow:var(--shadow-sm); }
+
+/* ---------- product grid (photo-forward alternative to the table) ---------- */
+.product-grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:16px;
+  padding:18px 22px;
+}
+.product-card{
+  border:1px solid var(--line); border-radius:var(--radius-md); overflow:hidden;
+  background:var(--card); display:flex; flex-direction:column; transition:border-color .15s ease;
+}
+.product-card:hover{ border-color:var(--ink-faint); }
+.product-card-thumb{
+  position:relative; aspect-ratio:1/1; background:var(--paper-dim);
+  display:flex; align-items:center; justify-content:center; color:var(--ink-faint);
+}
+.product-card-thumb img{ width:100%; height:100%; object-fit:cover; }
+.product-card-thumb svg{ width:28px; height:28px; }
+.product-card-check{
+  position:absolute; top:8px; left:8px; width:18px; height:18px; z-index:1;
+}
+.product-card-body{ padding:12px 14px; display:flex; flex-direction:column; gap:7px; }
+/* Price and stock used to be a straight two-column row, but the price
+   side turns into two stacked lines the moment a product is on sale
+   (sale price + struck-through original) while the stock side stays a
+   single line — centering those against each other left the original
+   price dangling at a different height than the stock pill, reading as
+   a stray, disconnected line. Top-aligning the row, and letting the
+   discounted price wrap onto one flowing line instead of stacking,
+   keeps both sides starting from the same baseline whether or not a
+   sale is active. */
+.product-card-meta{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px 10px; font-size:13px; flex-wrap:wrap; }
+.product-card-meta .price-disc{ flex-direction:row; flex-wrap:wrap; align-items:baseline; gap:2px 7px; }
+.product-card-meta .price-disc-now{ white-space:nowrap; }
+.product-card-meta .price-disc-orig{ white-space:nowrap; }
+.product-card-meta .stock-cell{ flex-shrink:0; }
+.product-card-status{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+/* Three real text buttons (Sale/Manage/Archive) never fit comfortably
+   side by side at the grid's minimum card width (190px) — every attempt
+   at splitting them across a row (Sale alone full-width, or Sale compact
+   next to Manage) just moved the cramped/oversized spot around instead
+   of fixing it. Stacking all three full-width, one per row, is the one
+   layout that stays comfortable at any card width and keeps every
+   button the same size — no more juggling which one gets the leftover
+   space. */
+.product-card-actions{ display:flex; flex-direction:column; gap:6px; margin-top:4px; }
+.product-card-actions .btn{ width:100%; }
+@media (max-width:480px){
+  .product-grid{ grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:12px; padding:14px; }
+}
+
+/* ---------- order grid (card alternative to the orders table) ---------- */
+.order-grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:14px;
+  padding:18px 22px;
+}
+.order-card{
+  border:1px solid var(--line); border-radius:var(--radius-md);
+  background:var(--card); padding:14px; display:flex; flex-direction:column; gap:10px;
+  transition:border-color .15s ease;
+}
+.order-card:hover{ border-color:var(--ink-faint); }
+.order-card-head{ display:flex; align-items:center; gap:8px; }
+.order-card-check{ width:16px; height:16px; flex-shrink:0; }
+.order-card-num{ font-weight:700; font-size:13px; margin-right:auto; }
+.order-card-body{ display:flex; flex-direction:column; gap:3px; }
+.order-card-meta{ display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:13px; padding-top:2px; border-top:1px solid var(--line-soft); }
+.order-card-actions{ display:flex; gap:6px; }
+.order-card-actions .btn{ flex:1; }
+@media (max-width:480px){
+  .order-grid{ grid-template-columns:1fr; gap:12px; padding:14px; }
+}
+
+/* ---------- data table ---------- */
+.table-wrap{ overflow-x:auto; }
+.data-table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+.data-table th{
+  text-align:left; padding:10px 22px; font-size:11.5px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.04em; color:var(--ink-faint); border-bottom:1px solid var(--line-soft); white-space:nowrap;
+}
+.data-table td{ padding:14px 22px; border-bottom:1px solid var(--line-soft); vertical-align:middle; }
+.data-table tbody tr:last-child td{ border-bottom:none; }
+.data-table tbody tr:hover{ background:var(--paper); }
+.table-loading, .table-empty{ padding:40px 22px; text-align:center; color:var(--ink-faint); font-size:13.5px; }
+
+/* ---------- sortable column headers ---------- */
+.th-sort{
+  display:inline-flex; align-items:center; gap:5px; background:none; border:none; padding:0;
+  font:inherit; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+  color:var(--ink-faint); cursor:pointer;
+}
+.th-sort:hover{ color:var(--ink); }
+.th-sort.is-active{ color:var(--ink); }
+.th-sort .sort-arrow{ font-size:11px; width:9px; display:inline-block; }
+
+.cell-product{ display:flex; align-items:center; gap:12px; min-width:220px; }
+.cell-thumb{
+  width:42px; height:42px; border-radius:9px; background:var(--paper-dim); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; overflow:hidden; color:var(--ink-faint);
+}
+.cell-thumb img{ width:100%; height:100%; object-fit:cover; }
+.cell-thumb svg{ width:18px; height:18px; }
+.cell-name{ font-weight:600; }
+.cell-sub{ font-size:11.5px; color:var(--ink-soft); margin-top:2px; }
+.cell-actions{ display:flex; justify-content:flex-end; gap:6px; }
+.stock-cell{ display:flex; align-items:center; gap:8px; }
+.stock-cell b{ font-variant-numeric:tabular-nums; font-weight:600; }
+.stock-edit-trigger{
+  background:none; border:1px solid transparent; border-radius:6px; padding:2px 6px; margin:-2px -6px;
+  cursor:pointer; font:inherit;
+}
+.stock-edit-trigger:hover{ border-color:var(--line); background:var(--paper-dim); }
+.stock-edit-input{
+  width:56px; border:1px solid var(--accent-line); border-radius:6px; padding:3px 6px;
+  font-size:13.5px; font-variant-numeric:tabular-nums; background:var(--paper);
+}
+.stock-edit-input:focus{ outline:none; box-shadow:0 0 0 3px var(--accent-soft); }
+
+/* Order table's "Placed" column repeats info that's cheap to fold into
+   the Status cell instead of scrolling for — so past 1080px it drops as
+   its own column and reappears as a subline under the status badge,
+   rather than forcing horizontal scroll on a tablet-width screen. */
+.cell-sub-collapse{ display:none; }
+@media (max-width:1080px){
+  .col-collapse{ display:none; }
+  .cell-sub-collapse{ display:block; }
+}
+
+/* ---------- mobile card layout for data tables ----------
+   Below 700px a table row becomes a card: header row hides, the
+   product/name cell sits full-width at top, remaining cells (marked
+   with data-label) become label/value rows, and actions sit in a
+   full-width row at the bottom — no more horizontal scrolling on a
+   phone-width screen. */
+@media (max-width:700px){
+  .table-wrap{ overflow-x:visible; }
+  .data-table thead{ display:none; }
+  .data-table, .data-table tbody{ display:block; width:100%; }
+  .data-table tbody tr{
+    display:block; position:relative; border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:14px 16px 14px 42px; margin:0 0 12px; background:var(--card);
+  }
+  .data-table tbody tr:last-child{ margin-bottom:0; }
+  .data-table td{ display:block; border-bottom:none; padding:0; }
+  .data-table td.cell-check{ position:absolute; left:14px; top:16px; padding:0; }
+  .data-table td:has(.cell-product){ margin-bottom:10px; }
+  .data-table td[data-label]{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:7px 0; border-top:1px solid var(--line-soft); font-size:13px;
+  }
+  .data-table td[data-label]::before{
+    content:attr(data-label); font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.03em; color:var(--ink-faint); flex-shrink:0;
+  }
+  .data-table td.cell-actions-cell{ padding-top:10px; border-top:1px solid var(--line-soft); }
+  .cell-actions{ justify-content:flex-start; flex-wrap:wrap; }
+}
+
+/* ---------- pagination ---------- */
+.pagination{
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  padding:14px 22px; font-size:12.5px; color:var(--ink-faint);
+}
+.pagination .page-controls{ display:flex; gap:6px; }
+
+/* ---------- image manager (product edit modal) ---------- */
+.image-grid{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+.image-cell{ display:flex; flex-direction:column; gap:5px; width:84px; }
+.image-tile{
+  position:relative; width:84px; height:84px; border-radius:10px; overflow:hidden;
+  border:1px solid var(--line); background:var(--paper-dim);
+}
+.image-tile img{ width:100%; height:100%; object-fit:cover; display:block; }
+.image-tile.is-cover{ border-color:var(--accent-line); box-shadow:0 0 0 1px var(--accent-line); }
+.image-tile .image-cover-badge{
+  position:absolute; left:0; bottom:0; right:0; padding:2px 0; text-align:center;
+  background:rgba(33,26,16,0.65); color:#fff; font-size:9.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+}
+.image-tile .image-remove{
+  position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%;
+  background:rgba(33,26,16,0.65); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px;
+}
+.image-tile .image-remove:hover{ background:var(--danger); }
+.image-tile .image-move{
+  position:absolute; top:3px; width:20px; height:20px; border-radius:50%;
+  background:rgba(33,26,16,0.65); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; line-height:1;
+}
+.image-tile .image-move[data-dir="-1"]{ left:3px; }
+.image-tile .image-move[data-dir="1"]{ left:25px; }
+.image-tile .image-move:hover{ background:var(--accent-deep); }
+.image-variant-tags{ display:flex; flex-wrap:wrap; align-items:center; gap:4px; min-height:16px; }
+.image-variant-tag{
+  font-size:9.5px; font-weight:700; padding:1px 6px; border-radius:999px;
+  background:var(--accent-soft); color:var(--accent-deep); white-space:nowrap;
+}
+.image-add-variant{
+  font-size:9.5px; color:var(--ink-faint); text-decoration:underline; text-underline-offset:2px;
+  background:none; border:none; cursor:pointer; padding:0;
+}
+.image-add-variant:hover{ color:var(--accent-deep); }
+.image-upload-tile{
+  width:84px; height:84px; border-radius:10px; border:1.5px dashed var(--line);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+  color:var(--ink-faint); font-size:11px; text-align:center; flex-shrink:0;
+}
+.image-upload-tile:hover{ border-color:var(--accent-line); color:var(--accent-deep); }
+.image-upload-tile svg{ width:18px; height:18px; }
+.image-upload-tile input{ display:none; }
+
+/* Quick "tag this photo as a variant" panel under the photo grid */
+.quick-variant-panel{
+  margin-top:4px; padding:12px; border:1px solid var(--accent-line); border-radius:10px; background:var(--accent-soft);
+}
+.qvp-header{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.qvp-header p{ flex:1; font-size:12.5px; font-weight:600; color:var(--ink-soft); margin:0; }
+.qvp-thumb{ width:32px; height:32px; border-radius:7px; object-fit:cover; flex-shrink:0; }
+.quick-variant-panel .variation-add-row{ row-gap:8px; }
+
+/* ---------- variation manager (product edit modal) ---------- */
+.variation-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+.variation-row{
+  display:flex; align-items:center; gap:10px; padding:9px 12px; border:1px solid var(--line-soft);
+  border-radius:9px; background:var(--paper); font-size:13px;
+}
+.variation-row .v-thumb{
+  width:32px; height:32px; border-radius:7px; overflow:hidden; flex-shrink:0; background:var(--paper-dim);
+  display:flex; align-items:center; justify-content:center;
+}
+.variation-row .v-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.variation-row .v-thumb-empty{ color:var(--ink-faint); font-size:14px; }
+.variation-row .v-type{ font-weight:700; flex-shrink:0; }
+.variation-row .v-value{ color:var(--ink-soft); flex:1; min-width:0; }
+.variation-row .v-adj{ font-variant-numeric:tabular-nums; font-size:12px; flex-shrink:0; }
+.variation-row .v-stock{ font-size:12px; color:var(--ink-faint); flex-shrink:0; width:64px; text-align:right; }
+.variation-row .v-actions{ display:flex; gap:4px; flex-shrink:0; }
+.variation-add-row{ display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; }
+.variation-add-row input{ border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:12.5px; background:var(--card); width:100%; min-width:0; }
+.va-field{ display:flex; flex-direction:column; gap:4px; flex:1 1 130px; min-width:100px; }
+.va-field.va-narrow{ flex:1 1 90px; max-width:112px; min-width:80px; }
+.va-label{ font-size:10px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; }
+.va-submit{ flex:0 0 auto; }
+.variation-hint{ font-size:11px; color:var(--ink-faint); margin:6px 0 14px; }
+
+/* Per-variant photo picker — shown inside both the add-row and edit-row forms */
+.variation-photo-picker{ flex:1 0 100%; display:flex; flex-direction:column; gap:6px; }
+.variation-photo-picker .vpp-label{ font-size:11px; color:var(--ink-faint); }
+.photo-picker-row{ display:flex; flex-wrap:wrap; gap:6px; }
+.photo-pick-chip, .photo-pick-thumb{
+  border:1.5px solid var(--line); border-radius:8px; background:var(--card); cursor:pointer;
+}
+.photo-pick-chip{ padding:6px 10px; font-size:11.5px; color:var(--ink-soft); }
+.photo-pick-thumb{ width:34px; height:34px; padding:0; overflow:hidden; flex-shrink:0; }
+.photo-pick-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.photo-pick-chip.is-selected, .photo-pick-thumb.is-selected{ border-color:var(--accent-deep); box-shadow:0 0 0 1px var(--accent-deep); }
+.photo-pick-empty{ font-size:11.5px; color:var(--ink-faint); }
+
+/* ---------- options manager (product edit modal: option groups + combo grid) ---------- */
+.option-groups{ display:flex; flex-direction:column; gap:12px; margin-bottom:12px; }
+.option-group{ border:1px solid var(--line); border-radius:12px; padding:12px 14px; background:var(--card); }
+.option-group-head{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.option-name-input{
+  flex:1; border:1px solid transparent; border-radius:8px; padding:5px 8px; font-size:13.5px; font-weight:700;
+  background:transparent; font-family:'Petrona', serif;
+}
+.option-name-input:hover, .option-name-input:focus{ border-color:var(--line); background:var(--paper); outline:none; }
+.option-value-chips{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.option-value-chip{
+  display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); border-radius:999px;
+  padding:5px 6px 5px 10px; font-size:12.5px; color:var(--ink-soft); background:var(--paper);
+}
+.option-value-chip .ovc-thumb{ width:20px; height:20px; border-radius:50%; object-fit:cover; }
+.option-value-chip .ovc-photo-toggle{
+  width:20px; height:20px; border-radius:50%; flex-shrink:0; padding:0; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+}
+.option-value-chip .ovc-thumb-placeholder{
+  width:20px; height:20px; border-radius:50%; border:1px solid var(--accent-line); background:var(--accent-soft);
+  display:flex; align-items:center; justify-content:center; color:var(--accent-deep); flex-shrink:0;
+}
+.option-value-chip .ovc-photo-toggle:hover .ovc-thumb-placeholder{ background:var(--accent-deep); border-color:var(--accent-deep); color:#fff; }
+.option-photo-hint{
+  display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--accent-deep); background:var(--accent-soft);
+  border-radius:8px; padding:8px 12px; margin-bottom:12px;
+}
+.option-photo-hint svg{ flex-shrink:0; }
+.option-value-chip .ovc-remove{
+  width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:9px; color:var(--ink-faint); flex-shrink:0;
+}
+.option-value-chip .ovc-remove:hover{ color:var(--danger); background:var(--danger-soft); }
+.option-value-add input{
+  border:1px dashed var(--line); border-radius:999px; padding:5px 12px; font-size:12.5px; background:transparent;
+  min-width:110px;
+}
+.option-value-add input:focus{ outline:none; border-style:solid; border-color:var(--accent-line); }
+.ovc-photo-popover{
+  flex-basis:100%; border:1px solid var(--line); border-radius:10px; padding:10px; margin-top:2px; background:var(--paper);
+}
+.ovc-popover-body{ display:flex; flex-direction:column; gap:8px; }
+.ovc-upload{
+  font-size:11.5px; color:var(--accent-deep); font-weight:600; cursor:pointer; display:inline-block; width:fit-content;
+}
+.ovc-popover-remove{ font-size:11.5px; color:var(--danger); text-align:left; width:fit-content; }
+.option-add-row{ display:flex; gap:8px; margin-bottom:6px; }
+.option-add-row input{
+  flex:1; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:12.5px; background:var(--card);
+}
+
+.combo-grid-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin:18px 0 8px; }
+.combo-grid-head h4{ font-family:'Petrona', serif; font-size:13.5px; margin:0; }
+.combo-table .combo-label{ display:flex; align-items:center; gap:8px; font-weight:600; }
+.combo-table .combo-thumb{ width:26px; height:26px; border-radius:6px; object-fit:cover; flex-shrink:0; }
+.combo-table input.combo-price, .combo-table input.combo-stock{
+  width:88px; border:1px solid var(--line); border-radius:7px; padding:6px 8px; font-size:12.5px; background:var(--card);
+}
+.combo-actions{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:12px; }
+.combo-flat-stock{ border:1px solid var(--line); border-radius:12px; padding:14px; background:var(--card); }
+.combo-flat-stock label{ font-size:12.5px; font-weight:600; display:block; margin-bottom:8px; }
+.combo-flat-stock-row{ display:flex; gap:8px; }
+.combo-flat-stock-row input{
+  flex:1; max-width:140px; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:12.5px; background:var(--paper);
+}
+
+/* ---------- modal tabs (manage product: details / images / variations) ---------- */
+.modal-tabs{ display:flex; gap:4px; padding:0 24px; border-bottom:1px solid var(--line-soft); }
+.modal-tab{
+  padding:10px 4px; margin-right:18px; font-size:13px; font-weight:700; color:var(--ink-faint);
+  border-bottom:2px solid transparent; margin-bottom:-1px;
+}
+.modal-tab.is-active{ color:var(--ink); border-bottom-color:var(--accent); }
+
+/* ---------- add-product wizard ---------- */
+.modal-box.is-xwide{ max-width:960px; }
+
+.wizard-steps{ display:flex; align-items:center; gap:0; padding:2px 24px 18px; flex-wrap:wrap; }
+.wizard-step{
+  display:flex; align-items:center; gap:8px; padding:4px 0; color:var(--ink-faint);
+  font-size:12.5px; font-weight:700; background:none; border:none;
+}
+.wizard-step-num{
+  width:22px; height:22px; border-radius:50%; border:1.5px solid var(--line); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:var(--ink-faint);
+  background:var(--card);
+}
+.wizard-step.is-active{ color:var(--ink); }
+.wizard-step.is-active .wizard-step-num{ border-color:var(--accent); color:var(--accent-deep); background:var(--accent-soft); }
+.wizard-step.is-done .wizard-step-num{ border-color:var(--thrive); color:#fff; background:var(--thrive); }
+.wizard-step.is-done{ color:var(--ink-soft); }
+.wizard-step:disabled{ opacity:.45; cursor:not-allowed; }
+.wizard-step:not(:disabled):hover .wizard-step-num{ border-color:var(--accent-line); }
+.wizard-step-connector{ width:26px; height:1.5px; background:var(--line); margin:0 6px; flex-shrink:0; }
+@media (max-width:640px){ .wizard-step-label{ display:none; } .wizard-step-connector{ width:12px; } }
+
+.wizard-layout{ display:grid; grid-template-columns:1fr 300px; gap:24px; align-items:flex-start; }
+.wizard-main{ min-width:0; }
+.wizard-preview{
+  position:sticky; top:4px; border:1px solid var(--line-soft); border-radius:14px; background:var(--paper); padding:14px;
+}
+.wizard-preview-head{ margin-bottom:10px; display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+.wizard-preview-eyebrow{ display:block; font-size:10.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-deep); }
+.wizard-preview-note{ display:block; font-size:11px; color:var(--ink-faint); margin-top:1px; }
+.wizard-hint{
+  display:flex; gap:8px; align-items:flex-start; font-size:12px; color:var(--ink-soft);
+  background:var(--accent-soft); border:1px solid var(--accent-line); border-radius:10px; padding:9px 11px; margin-bottom:16px;
+}
+.wizard-hint svg{ width:14px; height:14px; flex-shrink:0; margin-top:1px; color:var(--accent-deep); }
+.wizard-review-list{ list-style:none; display:flex; flex-direction:column; gap:6px; font-size:13px; margin:10px 0 14px; color:var(--ink-soft); }
+.wizard-review-list li{ display:flex; align-items:center; gap:8px; }
+.wizard-review-list li::before{ content:"✓"; color:var(--thrive); font-weight:700; }
+
+@media (max-width:760px){
+  .wizard-layout{ grid-template-columns:1fr; }
+  .wizard-preview{ position:static; }
+}
+
+/* buyer-mock card — deliberately mirrors the buyer storefront's own visual
+   language (Petrona-esque serif name, warm paper, chili price, teal seller
+   tag) rather than the workbench's own palette, so what a seller sees here
+   genuinely reads as "the storefront", not another seller-console panel. */
+.bm-card{
+  --bm-ink:#211a10; --bm-ink-soft:#4a4030; --bm-ink-faint:#8a7d64;
+  --bm-paper:#fbf7ee; --bm-paper-card:#ffffff;
+  --bm-chili:#bf3b2c; --bm-teal-deep:#0a4038; --bm-line:rgba(33,26,16,0.14);
+  background:var(--bm-paper-card); border:1px solid var(--bm-line); border-radius:14px; overflow:hidden;
+  font-family:'Work Sans', sans-serif; color:var(--bm-ink);
+}
+.bm-gallery{ width:100%; aspect-ratio:1/1; background:var(--bm-paper); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.bm-gallery img{ width:100%; height:100%; object-fit:cover; display:block; }
+.bm-noimg{ font-family:'Petrona', serif; font-weight:700; font-size:40px; color:var(--bm-teal-deep); opacity:.35; }
+.bm-thumbs{ display:flex; gap:5px; padding:8px 10px 0; }
+.bm-thumb{ width:24px; height:24px; border-radius:6px; overflow:hidden; border:1.5px solid transparent; opacity:.6; flex-shrink:0; padding:0; cursor:pointer; background:none; }
+.bm-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.bm-thumb.is-active{ border-color:var(--bm-ink); opacity:1; }
+.bm-body{ padding:12px 14px 16px; }
+.bm-seller{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--bm-teal-deep); margin-bottom:4px; }
+.bm-name{ font-family:'Petrona', serif; font-weight:600; font-size:15.5px; line-height:1.28; margin-bottom:5px; color:var(--bm-ink); word-break:break-word; }
+.bm-price{ font-weight:700; font-size:16px; color:var(--bm-chili); margin-bottom:5px; }
+.bm-stock{ display:inline-block; font-size:10.5px; font-weight:700; color:var(--bm-ink-faint); margin-bottom:8px; }
+.bm-stock.is-low{ color:var(--bm-chili); }
+.bm-stock.is-out{ color:var(--bm-chili); text-decoration:line-through; }
+.bm-desc{ font-size:11.5px; color:var(--bm-ink-soft); line-height:1.55; margin-bottom:10px; white-space:pre-wrap; }
+.bm-variations{ margin-bottom:10px; }
+.bm-vgroup{ margin-bottom:8px; }
+.bm-vlabel{ font-size:10px; font-weight:700; text-transform:capitalize; color:var(--bm-ink-soft); margin-bottom:4px; }
+.bm-voptions{ display:flex; flex-wrap:wrap; gap:5px; }
+.bm-pill{ font-size:10.5px; padding:4px 9px; border-radius:999px; border:1.3px solid var(--bm-line); color:var(--bm-ink-soft); background:#fff; cursor:pointer; transition:background .12s ease, border-color .12s ease, color .12s ease; }
+.bm-pill:hover:not(.is-selected):not(.is-unavailable){ border-color:var(--bm-ink-soft); }
+.bm-pill.is-selected{ background:var(--bm-ink); border-color:var(--bm-ink); color:#fff; }
+.bm-pill.is-unavailable{ opacity:.4; text-decoration:line-through; cursor:not-allowed; }
+.bm-cta{
+  width:100%; padding:9px; border-radius:999px; background:var(--bm-ink); color:#fff; font-weight:700; font-size:12.5px;
+  opacity:.55; cursor:not-allowed; border:none;
+}
+.bm-placeholder{ padding:30px 14px; text-align:center; color:var(--bm-ink-faint); font-size:12px; }
+.bm-placeholder svg{ width:26px; height:26px; margin:0 auto 8px; opacity:.5; display:block; }
+
+/* ================================================================
+   RESPONSIVE — rail collapses to an off-canvas drawer below 860px,
+   topbar's pulse strip already hides at that width above.
+   ================================================================ */
+@media (max-width: 860px){
+  .seller-rail{
+    position:fixed; left:0; top:0; transform:translateX(-100%);
+    transition:transform .22s ease; box-shadow:var(--shadow);
+    width:248px; align-items:stretch; padding:18px 10px 14px;
+  }
+  .seller-rail.is-open{ transform:translateX(0); }
+  .rail-backdrop{ display:block; }
+  .topbar-burger{ display:flex; }
+  .seller-content{ padding:20px 16px 48px; }
+
+  /* On a touch drawer there's no hover, so the rail can't lean on
+     hover-tooltips for wayfinding — every link gets a real, always-visible
+     label instead of an icon the seller has to already know by heart. */
+  .rail-brand{ align-self:flex-start; margin-left:6px; }
+  .rail-nav{ align-items:stretch; gap:2px; }
+  .rail-link{
+    width:100%; height:auto; justify-content:flex-start; gap:12px;
+    padding:11px 12px; border-radius:9px;
+  }
+  .rail-link svg{ order:1; flex-shrink:0; }
+  .rail-link .rail-tip{
+    order:2; position:static; opacity:1; pointer-events:none; transform:none;
+    background:none; color:inherit; padding:0; font-size:13.5px; font-weight:600;
+    margin-right:auto;
+  }
+  .rail-link .rail-dot{ order:3; position:static; margin-left:auto; border:none; }
+  .rail-link .rail-msg-badge{ order:3; position:static; margin-left:auto; border:none; }
+  .rail-foot{ align-items:stretch; margin-top:10px; padding-top:14px; border-top:1px solid var(--line-soft); }
+  .rail-account{ display:flex; align-items:center; gap:10px; }
+  .rail-account-pop{ left:0; right:0; bottom:calc(100% + 8px); width:auto; }
+}
+@media (max-width: 560px){
+  .seller-topbar{ padding:0 16px; }
+  .topbar-left h1{ font-size:16px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+}
+
+/* ================================================================
+   ORDER DETAIL MODAL — itemized breakdown, ship-to block, status
+   log, and the seller's own hand-off state (not-packed / handed-off
+   / delivery-owns-it-now / cancelled). No step tracker here, unlike
+   the buyer's version — a seller doesn't need a progress bar for a
+   pipeline they no longer drive past "confirm ready."
+   ================================================================ */
+.ord-handoff-note{
+  display:flex; flex-direction:column; gap:2px; background:var(--paper-dim);
+  border:1.5px dashed var(--line); border-radius:12px; padding:12px 16px; margin:2px 0 20px;
+}
+.ord-handoff-note strong{ font-size:13px; }
+.ord-handoff-note span{ font-size:12px; color:var(--ink-soft); }
+.ord-handoff-note.is-warm{ background:var(--warn-soft); border-color:var(--warn); }
+.ord-handoff-note.is-warm strong{ color:var(--warn-deep); }
+.ord-handoff-note.is-good{ background:var(--thrive-soft); border-color:var(--thrive); }
+.ord-handoff-note.is-good strong{ color:var(--thrive-deep); }
+
+.ord-cancelled-seal{
+  display:flex; align-items:center; gap:14px; background:var(--danger-soft);
+  border:1px solid rgba(178,58,46,.25); border-radius:12px; padding:14px 18px; margin:2px 0 20px;
+}
+.ord-cancelled-seal strong{ display:block; font-size:13.5px; color:var(--danger-deep); }
+.ord-cancelled-seal span{ font-size:12px; color:var(--danger-deep); opacity:.85; }
+
+.ord-detail-items{ border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-bottom:16px; padding:2px 16px; }
+.ord-detail-item{ display:flex; align-items:baseline; gap:10px; padding:9px 0; border-top:1px dashed var(--line); font-size:13px; }
+.ord-detail-item:first-child{ border-top:none; }
+.ord-detail-item-name{ font-weight:600; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ord-detail-item-qty{ font-variant-numeric:tabular-nums; font-size:11px; color:var(--ink-faint); flex-shrink:0; }
+.ord-detail-item-total{ font-weight:700; color:var(--ink); white-space:nowrap; flex-shrink:0; }
+
+.ord-summary-rows{ margin-bottom:20px; }
+.ord-summary-row{ display:flex; justify-content:space-between; font-size:13px; padding:6px 0; color:var(--ink-soft); }
+.ord-summary-row.is-discount{ color:var(--thrive-deep); }
+.ord-summary-row.is-total{
+  font-weight:700; color:var(--ink); font-size:14.5px; padding-top:10px; margin-top:4px;
+  border-top:1.5px dashed var(--line);
+}
+
+.ord-ship-block{
+  background:var(--paper); border:1px solid var(--line-soft); border-radius:12px;
+  padding:14px 16px; margin-bottom:20px; font-size:13px; color:var(--ink-soft);
+}
+.ord-ship-block h4{ font-family:'Petrona', serif; font-weight:600; font-size:13.5px; color:var(--ink); margin-bottom:6px; }
+.ord-ship-block p{ margin-top:2px; }
+
+.ord-log h4{ font-family:'Petrona', serif; font-weight:600; font-size:14px; margin-bottom:4px; }
+.ord-log{ margin-bottom:8px; }
+.ord-log-list{ margin-top:8px; }
+.ord-log-entry{ display:flex; gap:12px; padding:9px 0; border-top:1px solid var(--line-soft); }
+.ord-log-entry:first-child{ border-top:none; }
+.ord-log-dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); margin-top:6px; flex-shrink:0; }
+.ord-log-time{ font-variant-numeric:tabular-nums; font-size:10px; color:var(--ink-faint); white-space:nowrap; flex-shrink:0; padding-top:1px; }
+.ord-log-body strong{ display:block; font-size:12.5px; text-transform:capitalize; }
+.ord-log-body span{ font-size:12px; color:var(--ink-soft); }
+
+/* Delivery sub-statuses that don't have their own badge-* mapping yet
+   (order.status is still 'to_ship' throughout these) — fold them into
+   the same warm "pending" look used for badge-to_ship. */
+.badge-awaiting_logistics_confirmation, .badge-accepted{ color:var(--warn-deep); }
+
+/* ==========================================================
+   Messages — seller inbox (seller/messages.html). Same two-pane
+   "conversation list + active thread" shape as the buyer inbox, restyled
+   with the console's own tokens (Petrona for names/headers, tabular
+   for timestamps, the accent/thrive/warn trio standing in for the
+   buyer app's chili/teal/gold avatar palettes). Sits inside a .panel
+   like every other seller page, via .panel-body.is-flush.
+   ========================================================== */
+.msg-shell{
+  display:grid; grid-template-columns:320px 1fr;
+  width:100%; flex:1; min-height:0;
+  background:var(--card);
+}
+
+/* ---------- list column ---------- */
+.msg-list-col{ display:flex; flex-direction:column; min-width:0; border-right:1px solid var(--line); }
+.msg-list-head{ padding:16px 16px 12px; border-bottom:1px solid var(--line-soft); flex-shrink:0; }
+.msg-search{ position:relative; display:flex; align-items:center; }
+.msg-search svg{ position:absolute; left:12px; width:14px; height:14px; color:var(--ink-faint); pointer-events:none; }
+.msg-search input{
+  width:100%; background:var(--paper); border:1px solid var(--line);
+  border-radius:999px; padding:9px 12px 9px 34px; font-size:13px; color:var(--ink);
+}
+.msg-search input::placeholder{ color:var(--ink-faint); }
+.msg-search input:focus{ outline:none; border-color:var(--accent-line); box-shadow:0 0 0 3px var(--accent-soft); }
+
+.msg-list-scroll{ flex:1; overflow-y:auto; }
+
+.msg-row{
+  display:flex; align-items:flex-start; gap:11px; width:100%; padding:13px 16px;
+  border-bottom:1px solid var(--line-soft); text-align:left; transition:background .12s ease;
+}
+.msg-row:hover{ background:var(--paper); }
+.msg-row.is-active{ background:var(--accent-soft); }
+.msg-row.is-active .msg-row-name{ color:var(--accent-deep); }
+
+.msg-avatar{
+  width:38px; height:38px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Petrona', serif; font-weight:700; font-size:13px;
+  overflow:hidden;
+}
+.msg-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+.msg-avatar--thrive{ background:var(--thrive-soft); color:var(--thrive-deep); }
+.msg-avatar--accent{ background:var(--accent-soft); color:var(--accent-deep); }
+.msg-avatar--warn{ background:var(--warn-soft); color:var(--warn-deep); }
+
+.msg-row-body{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.msg-row-top{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+.msg-row-name{ font-size:13.5px; font-weight:600; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.msg-row.is-unread .msg-row-name{ font-weight:800; color:var(--ink); }
+.msg-row-time{ font-variant-numeric:tabular-nums; font-size:10px; color:var(--ink-faint); flex-shrink:0; }
+.msg-row-bottom{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.msg-row-preview{ font-size:12px; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.msg-row.is-unread .msg-row-preview{ color:var(--ink); font-weight:600; }
+.msg-unread-dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+.msg-row-order{
+  margin-top:2px; display:inline-block; font-variant-numeric:tabular-nums; font-size:10px;
+  color:var(--accent-deep); background:var(--accent-soft); border-radius:5px; padding:1px 6px;
+}
+.msg-row-item{
+  align-self:flex-start; display:flex; align-items:center; gap:5px; margin-top:3px; max-width:100%;
+  font-size:10.5px; color:var(--ink-soft); background:var(--paper); border:1px solid var(--line-soft);
+  padding:2px 8px 2px 2px; border-radius:999px;
+}
+.msg-row-item img{ width:16px; height:16px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+.msg-row-item span{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.msg-row-skel{ padding:13px 16px; display:flex; gap:11px; }
+.msg-avatar-skel{ width:38px; height:38px; border-radius:50%; background:var(--paper-dim); animation:skel-pulse 1.4s ease-in-out infinite; flex-shrink:0; }
+.msg-row-skel .sk-line{ height:9px; border-radius:6px; background:var(--paper-dim); animation:skel-pulse 1.4s ease-in-out infinite; margin:6px 0; }
+.msg-row-skel .sk-line.w60{ width:60%; }
+.msg-row-skel .sk-line.w40{ width:40%; }
+@keyframes skel-pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.5; } }
+
+/* ---- grouped conversations (several variant threads, one product) ---- */
+.msg-group{ border-bottom:1px solid var(--line); }
+.msg-group-header{ border-bottom:0; padding-right:12px; }
+.msg-group-caret{
+  flex-shrink:0; align-self:center; width:16px; height:16px; color:var(--ink-faint);
+  transition:transform .15s ease;
+}
+.msg-group.is-expanded .msg-group-caret{ transform:rotate(180deg); }
+.msg-group-children{ background:rgba(33,26,16,.02); }
+.msg-subrow{
+  padding:10px 16px 10px 38px; border-bottom:1px solid var(--line); gap:10px;
+}
+.msg-group-children .msg-subrow:last-child{ border-bottom:0; }
+.msg-subrow-dot{
+  width:5px; height:5px; border-radius:50%; background:var(--ink-faint); flex-shrink:0;
+  margin-top:7px;
+}
+.msg-subrow.is-unread .msg-subrow-dot{ background:var(--accent); }
+.msg-subrow .msg-row-top{ justify-content:flex-end; }
+
+.msg-empty-list{
+  height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; gap:8px; padding:30px 20px; color:var(--ink-faint);
+}
+.msg-empty-list .state-seal{ width:38px; height:38px; border-radius:50%; border:1.5px dashed var(--ink-faint); display:flex; align-items:center; justify-content:center; color:var(--ink-faint); }
+.msg-empty-list h3{ font-family:'Petrona', serif; font-weight:600; font-size:15px; color:var(--ink); }
+.msg-empty-list p{ font-size:12.5px; line-height:1.55; max-width:220px; }
+
+/* ---------- thread column ---------- */
+.msg-thread-col{ display:flex; flex-direction:column; min-width:0; background:var(--paper); position:relative; }
+.msg-empty-pane{
+  height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; gap:8px; padding:30px;
+}
+.msg-empty-pane .state-seal{ width:42px; height:42px; border-radius:50%; border:1.5px dashed var(--ink-faint); display:flex; align-items:center; justify-content:center; color:var(--ink-faint); }
+.msg-empty-pane h3{ font-family:'Petrona', serif; font-weight:600; font-size:16px; color:var(--ink); }
+.msg-empty-pane p{ font-size:13px; max-width:280px; line-height:1.55; color:var(--ink-faint); }
+
+.msg-thread-head{ display:flex; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid var(--line); background:var(--card); flex-shrink:0; }
+.msg-back-btn{
+  display:none; width:30px; height:30px; border-radius:50%; flex-shrink:0;
+  align-items:center; justify-content:center; color:var(--ink-soft); transition:background .15s ease;
+}
+.msg-back-btn:hover{ background:var(--paper-dim); color:var(--ink); }
+.msg-back-btn svg{ width:16px; height:16px; }
+.msg-thread-who{ display:flex; flex-direction:column; min-width:0; }
+.msg-thread-who strong{ font-family:'Petrona', serif; font-weight:600; font-size:14.5px; color:var(--ink); }
+.msg-thread-who span{ font-size:11.5px; color:var(--ink-faint); }
+
+.msg-thread-product{
+  display:flex; align-items:center; gap:10px; padding:9px 20px;
+  border-bottom:1px solid var(--line); background:var(--paper); flex-shrink:0;
+}
+.msg-thread-product img{ width:32px; height:32px; border-radius:8px; object-fit:cover; flex-shrink:0; }
+.msg-thread-product-noimg{
+  width:32px; height:32px; border-radius:8px; flex-shrink:0; background:var(--accent-soft); color:var(--accent-deep);
+  display:flex; align-items:center; justify-content:center; font-family:'Petrona', serif; font-weight:700; font-size:13px;
+}
+.msg-thread-product-info{ display:flex; flex-direction:column; min-width:0; gap:1px; }
+.msg-thread-product-info small{ font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-faint); }
+.msg-thread-product-info span{ font-size:12.5px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.msg-thread-scroll{
+  flex:1; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column;
+}
+.msg-thread-loading{ margin:auto; display:flex; align-items:center; justify-content:center; padding:30px; }
+.msg-thread-empty{ margin:auto; text-align:center; color:var(--ink-faint); font-size:13px; font-style:italic; padding:30px; }
+
+.msg-load-older{
+  align-self:center; font-size:11.5px; font-weight:700; color:var(--ink-faint);
+  border:1px solid var(--line); border-radius:999px; padding:6px 14px; margin-bottom:14px;
+  transition:border-color .15s ease, color .15s ease;
+}
+.msg-load-older:hover{ border-color:var(--accent-line); color:var(--accent-deep); }
+
+.msg-day-divider{
+  display:flex; align-items:center; gap:10px; font-variant-numeric:tabular-nums; font-size:10.5px;
+  color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; margin:16px 0 12px;
+}
+.msg-day-divider:first-child{ margin-top:0; }
+.msg-day-divider::before, .msg-day-divider::after{ content:""; flex:1; height:0; border-top:1px dashed var(--line); }
+
+.msg-bubble-row{ display:flex; align-items:flex-end; gap:6px; margin-bottom:10px; }
+.msg-bubble-row.is-grouped{ margin-top:-6px; }
+.msg-bubble-row.is-mine{ justify-content:flex-end; }
+/* Mirror of the buyer side's own rule — see buyer.css for the full
+   reasoning. Own messages are right-aligned, so the react/unsend buttons
+   need to sit to their left, not spill past them toward the panel edge. */
+.msg-bubble-row.is-mine .msg-bubble-col{ order:3; }
+.msg-bubble-row.is-mine .msg-react-btn{ order:2; }
+.msg-bubble-row.is-mine .msg-unsend-btn{ order:1; }
+.msg-bubble-row.is-pending{ opacity:.6; }
+
+.msg-bubble-col{ display:flex; flex-direction:column; gap:5px; max-width:66%; min-width:0; }
+.msg-bubble-row:not(.is-mine) .msg-bubble-col{ align-items:flex-start; }
+.msg-bubble-row.is-mine .msg-bubble-col{ align-items:flex-end; }
+
+.msg-bubble{
+  padding:9px 14px; border-radius:16px; font-size:13.5px; line-height:1.5;
+  word-wrap:break-word; white-space:pre-wrap; max-width:100%;
+}
+.msg-bubble-row:not(.is-mine) .msg-bubble{
+  background:var(--card); border:1px solid var(--line); color:var(--ink); border-bottom-left-radius:5px;
+}
+.msg-bubble-row.is-mine .msg-bubble{ background:var(--ink); color:var(--paper); border-bottom-right-radius:5px; }
+.msg-bubble-time{
+  font-family:'Space Mono', monospace; font-variant-numeric:tabular-nums;
+  font-size:10px; color:var(--ink-faint); padding:0 4px;
+}
+@media (max-width:520px){ .msg-bubble-col{ max-width:80%; } }
+
+/* ---- reactions ---- */
+.msg-react-btn{
+  width:26px; height:26px; border-radius:50%; flex-shrink:0; align-self:flex-end; margin-bottom:2px;
+  display:flex; align-items:center; justify-content:center; color:var(--ink-faint);
+  opacity:0; transition:opacity .15s ease, background .15s ease, color .15s ease;
+}
+.msg-react-btn svg{ width:15px; height:15px; }
+.msg-bubble-row:hover .msg-react-btn, .msg-react-btn:focus-visible{ opacity:1; }
+.msg-react-btn:hover{ background:var(--paper-dim); color:var(--ink); }
+@media (pointer:coarse){ .msg-react-btn{ opacity:.55; } }
+
+/* ---- unsend ---- */
+/* Same hover-reveal circle as .msg-react-btn, sitting right next to it,
+   but tinted toward danger on hover since it's destructive — only ever
+   rendered on the sender's own message and only inside the 10-minute
+   window (see canUnsend() in seller-messages.js). */
+.msg-unsend-btn{
+  width:26px; height:26px; border-radius:50%; flex-shrink:0; align-self:flex-end; margin-bottom:2px;
+  display:flex; align-items:center; justify-content:center; color:var(--ink-faint);
+  opacity:0; transition:opacity .15s ease, background .15s ease, color .15s ease;
+}
+.msg-unsend-btn svg{ width:14px; height:14px; }
+.msg-bubble-row:hover .msg-unsend-btn, .msg-unsend-btn:focus-visible{ opacity:1; }
+.msg-unsend-btn:hover{ background:var(--danger-soft); color:var(--danger); }
+@media (pointer:coarse){ .msg-unsend-btn{ opacity:.55; } }
+
+/* Placeholder bubble a message collapses into once unsent — dashed
+   outline and muted italic text so it reads as "gone" rather than as
+   just another message, on both sides of the thread. */
+.msg-bubble-unsent{
+  display:flex; align-items:center; gap:6px;
+  padding:8px 13px; border-radius:16px; border:1px dashed var(--line);
+  color:var(--ink-faint); font-size:12.5px; font-style:italic;
+}
+.msg-bubble-unsent svg{ width:13px; height:13px; flex-shrink:0; }
+.msg-bubble-row.is-mine .msg-bubble-unsent{ border-bottom-right-radius:5px; }
+.msg-bubble-row:not(.is-mine) .msg-bubble-unsent{ border-bottom-left-radius:5px; }
+
+.msg-reactions{ display:flex; flex-wrap:wrap; gap:4px; }
+.msg-reaction-pill{
+  display:flex; align-items:center; gap:4px; padding:2px 8px; border-radius:999px;
+  background:var(--card); border:1px solid var(--line); font-size:11.5px; color:var(--ink-soft);
+  transition:border-color .15s ease, background .15s ease;
+}
+.msg-reaction-pill span{ font-size:12.5px; line-height:1; }
+.msg-reaction-pill small{ font-variant-numeric:tabular-nums; font-size:10px; color:inherit; }
+.msg-reaction-pill:hover{ border-color:var(--ink-faint); }
+.msg-reaction-pill.is-mine{ background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent-deep); }
+
+.msg-emoji-picker{
+  position:absolute; z-index:20; display:flex; gap:2px; padding:6px; border-radius:999px;
+  background:var(--card); border:1px solid var(--line); box-shadow:var(--shadow);
+}
+.msg-emoji-opt{
+  width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:17px; transition:background .12s ease, transform .12s ease;
+}
+.msg-emoji-opt:hover{ background:var(--paper-dim); transform:scale(1.15); }
+
+/* ---- attachments (sent messages) ---- */
+.msg-attachment-image{
+  display:block; width:220px; max-width:100%; border-radius:15px; overflow:hidden;
+  border:1px solid var(--line); background:var(--paper-dim);
+}
+.msg-attachment-image img{ width:100%; height:auto; max-height:260px; object-fit:cover; display:block; }
+.msg-bubble-row.is-mine .msg-attachment-image{ border-bottom-right-radius:5px; }
+.msg-bubble-row:not(.is-mine) .msg-attachment-image{ border-bottom-left-radius:5px; }
+
+.msg-attachment-file{
+  display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:13px; width:220px; max-width:100%;
+  background:var(--card); border:1px solid var(--line); transition:border-color .15s ease, background .15s ease;
+}
+.msg-attachment-file:hover{ border-color:var(--accent-line); background:var(--paper-dim); }
+.msg-attachment-file-icon{ width:32px; height:32px; border-radius:9px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--paper-dim); color:var(--ink-soft); }
+.msg-attachment-file-icon svg{ width:16px; height:16px; }
+.msg-attachment-file-info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.msg-attachment-file-info strong{ font-size:12px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.msg-attachment-file-info small{ font-size:10.5px; color:var(--ink-faint); }
+.msg-attachment-file-dl{ flex-shrink:0; color:var(--ink-faint); display:flex; }
+.msg-attachment-file-dl svg{ width:14px; height:14px; }
+
+/* ---- composer ---- */
+.msg-composer-wrap{ border-top:1px solid var(--line); background:var(--card); flex-shrink:0; }
+.msg-composer{ display:flex; align-items:flex-end; gap:8px; padding:14px 20px; }
+.msg-attach-btn{
+  width:36px; height:36px; border-radius:50%; flex-shrink:0; margin-bottom:2px;
+  display:flex; align-items:center; justify-content:center; color:var(--ink-soft);
+  transition:background .15s ease, color .15s ease;
+}
+.msg-attach-btn svg{ width:18px; height:18px; }
+.msg-attach-btn:hover{ background:var(--paper-dim); color:var(--ink); }
+.msg-composer textarea{
+  flex:1; resize:none; max-height:120px; border:1px solid var(--line); border-radius:16px;
+  padding:10px 15px; font-size:13.5px; font-family:'Work Sans', sans-serif; line-height:1.4; color:var(--ink);
+  background:var(--paper);
+}
+.msg-composer textarea:focus{ outline:none; border-color:var(--accent-line); box-shadow:0 0 0 3px var(--accent-soft); }
+.msg-send-btn{
+  width:38px; height:38px; border-radius:50%; flex-shrink:0; background:var(--accent); color:#fff;
+  display:flex; align-items:center; justify-content:center; transition:background .15s ease, transform .1s ease;
+}
+.msg-send-btn:hover:not(:disabled){ background:var(--accent-deep); }
+.msg-send-btn:active:not(:disabled){ transform:scale(.92); }
+.msg-send-btn:disabled{ opacity:.4; cursor:not-allowed; }
+.msg-send-btn svg{ width:16px; height:16px; }
+
+.msg-attach-preview{ padding:10px 20px 0; background:var(--card); }
+.msg-attach-chip{
+  display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:13px;
+  background:var(--paper-dim); border:1px solid var(--line); max-width:280px;
+}
+.msg-attach-chip img{ width:36px; height:36px; border-radius:9px; object-fit:cover; flex-shrink:0; }
+.msg-attach-chip-icon{ width:36px; height:36px; border-radius:9px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--card); border:1px solid var(--line); color:var(--ink-soft); }
+.msg-attach-chip-icon svg{ width:16px; height:16px; }
+.msg-attach-chip-info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.msg-attach-chip-info strong{ font-size:12px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.msg-attach-chip-info small{ font-size:10.5px; color:var(--ink-faint); }
+.msg-attach-chip-remove{
+  width:22px; height:22px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  color:var(--ink-faint); transition:background .15s ease, color .15s ease;
+}
+.msg-attach-chip-remove svg{ width:12px; height:12px; }
+.msg-attach-chip-remove:hover{ background:var(--danger-soft); color:var(--danger-deep); }
+
+@media (max-width:860px){
+  .msg-shell{ grid-template-columns:1fr; position:relative; overflow:hidden; }
+  .msg-list-col{ border-right:none; }
+  .msg-thread-col{
+    position:absolute; inset:0; transform:translateX(100%); transition:transform .22s ease; z-index:2;
+  }
+  .msg-shell.is-thread-open .msg-thread-col{ transform:translateX(0); }
+  .msg-back-btn{ display:flex; }
+}
+
+/* ================================================================
+   REPORTS — sales & earnings. A ledger you can actually read at a
+   glance: a headline earnings card with its own trend line, KPI
+   tiles with period-over-period deltas, a hand-drawn (no library)
+   trend chart with a hover readout, and two side-by-side panels for
+   "where orders ended up" and "what actually sold" as a leaderboard
+   rather than a plain table.
+   ================================================================ */
+
+.range-row{ display:flex; align-items:center; flex-wrap:wrap; gap:14px; }
+.range-pills{ display:flex; gap:6px; background:var(--paper-dim); padding:4px; border-radius:999px; }
+.range-pill{
+  padding:7px 15px; border-radius:999px; font-size:12.5px; font-weight:700; color:var(--ink-soft);
+  transition:background .15s ease, color .15s ease;
+}
+.range-pill:hover{ color:var(--ink); }
+.range-pill.is-active{ background:var(--ink); color:var(--paper); }
+
+.range-custom{ display:flex; align-items:center; gap:8px; }
+.range-custom input[type="date"]{
+  border:1px solid var(--line); border-radius:9px; padding:7px 10px; font-size:12.5px; background:var(--card);
+}
+.range-custom span{ color:var(--ink-faint); }
+
+.range-caption{ margin-left:auto; font-size:12px; color:var(--ink-faint); font-variant-numeric:tabular-nums; }
+
+/* ---- hero + kpi row ---- */
+.rpt-hero-row{ display:grid; grid-template-columns:300px 1fr; gap:16px; margin-bottom:16px; }
+
+.rpt-hero{
+  background:var(--chip); color:var(--chip-ink); border-radius:var(--radius-lg);
+  padding:22px 22px 0; display:flex; flex-direction:column; box-shadow:var(--shadow-sm);
+  overflow:hidden;
+}
+.rpt-hero-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.rpt-hero-label{ font-size:12px; color:rgba(251,247,238,0.6); font-weight:600; letter-spacing:.02em; }
+.rpt-hero-value{ font-family:'Petrona', serif; font-size:34px; font-weight:700; color:#fff; margin-top:4px; line-height:1.1; }
+.rpt-hero-sub{ font-size:11.5px; color:rgba(251,247,238,0.55); margin-top:10px; line-height:1.5; }
+.rpt-spark{ width:100%; height:56px; margin-top:14px; display:block; }
+
+.rpt-delta{
+  display:inline-flex; align-items:baseline; gap:5px; padding:5px 10px; border-radius:999px;
+  font-size:12px; font-weight:700; white-space:nowrap; flex-shrink:0;
+}
+.rpt-delta.is-up{ background:rgba(201,169,97,0.28); color:var(--accent-bright); }
+.rpt-delta.is-down{ background:rgba(191,59,44,0.26); color:var(--danger-bright); }
+.rpt-delta.is-flat{ background:rgba(255,255,255,0.12); color:rgba(251,247,238,0.7); }
+.rpt-delta-sub{ font-weight:500; opacity:.8; font-size:11px; }
+
+.rpt-delta-inline{ display:inline-flex; align-items:baseline; gap:4px; font-size:12px; font-weight:700; }
+.rpt-delta-inline.is-up{ color:var(--thrive-deep); }
+.rpt-delta-inline.is-down{ color:var(--danger); }
+.rpt-delta-inline.is-flat{ color:var(--ink-faint); }
+.rpt-delta-inline .text-muted{ font-weight:500; }
+
+/* ---- money flow strip: placed -> collected -> minus commission -> net,
+   as one connected chain instead of four same-weight cards ---- */
+.rpt-flow-card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius-lg);
+  padding:16px 18px; display:flex; flex-direction:column; justify-content:center;
+}
+.rpt-flow-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.rpt-flow-title{ font-size:12.5px; font-weight:600; color:var(--ink-faint); }
+.rpt-flow-orders{
+  font-size:11.5px; font-weight:700; color:var(--ink-soft); background:var(--paper-dim);
+  padding:3px 10px; border-radius:999px;
+}
+.rpt-flow{ display:flex; align-items:center; gap:8px; }
+.rpt-flow-step{ flex:1; min-width:0; text-align:center; }
+.rpt-flow-label{ font-size:11.5px; font-weight:600; color:var(--ink-faint); margin-bottom:4px; }
+.rpt-flow-value{
+  font-family:'Petrona', serif; font-size:19px; font-weight:700; color:var(--ink);
+  font-variant-numeric:tabular-nums; line-height:1.1;
+}
+.rpt-flow-step.is-good .rpt-flow-value{ color:var(--thrive-deep); }
+.rpt-flow-step.is-warm .rpt-flow-value{ color:var(--warn-deep); }
+.rpt-flow-step.is-signal .rpt-flow-value{ color:var(--accent-deep); font-size:21px; }
+.rpt-flow-delta{ margin-top:4px; font-size:11px; min-height:14px; }
+.rpt-flow-op{ color:var(--ink-faint); font-size:15px; font-weight:700; flex-shrink:0; }
+@media (max-width:1080px){
+  .rpt-flow{ flex-wrap:wrap; row-gap:14px; }
+  .rpt-flow-step{ flex-basis:calc(50% - 20px); }
+  .rpt-flow-op{ display:none; }
+}
+
+/* ---- info tooltip trigger next to the panel description ---- */
+.rpt-info-btn{
+  display:inline-flex; align-items:center; justify-content:center; vertical-align:-3px;
+  width:16px; height:16px; border-radius:50%; color:var(--ink-faint); margin-left:2px;
+}
+.rpt-info-btn:hover{ color:var(--ink); }
+.rpt-info-btn svg{ width:13px; height:13px; }
+
+.rpt-legend{ display:flex; gap:16px; flex-shrink:0; }
+.rpt-legend-item{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-soft); font-weight:600; }
+.rpt-legend-item i{ width:10px; height:10px; border-radius:3px; display:inline-block; }
+
+/* ---- trend chart ---- */
+.chart-wrap{ position:relative; }
+/* Matches the real chart's rendered height so the panel doesn't visibly
+   resize once data arrives, and gives the "no sales yet" state an icon
+   instead of just floating text in a big empty box. */
+.chart-empty-state{ min-height:220px; justify-content:center; }
+.chart-empty-cta{ margin-top:16px; }
+
+/* Ghost/preview chart behind the "No sales yet" message — a faint,
+   static preview of what the real chart will look like once orders
+   start coming in, rather than a generic broken-chart icon. Reads as
+   "this is ready and waiting for you" instead of "nothing to see here." */
+.chart-empty-wrap{ position:relative; min-height:220px; }
+.chart-svg-ghost{ width:100%; height:220px; display:block; opacity:0.55; }
+.chart-ghost-area{ fill:var(--paper-dim); }
+.chart-ghost-line{ stroke:var(--ink-faint); stroke-width:2; stroke-dasharray:7 7; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.chart-empty-overlay{
+  position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:20px;
+  background:radial-gradient(ellipse 70% 90% at 50% 50%, var(--card) 55%, transparent 100%);
+}
+.chart-empty-overlay .empty-title{ font-family:'Petrona', serif; font-size:16px; margin-top:2px; }
+.chart-empty-overlay p{ font-size:13px; color:var(--ink-faint); max-width:320px; margin:4px 0 0; }
+.chart-empty-icon{
+  width:40px; height:40px; border-radius:50%; margin-bottom:8px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--accent-soft); color:var(--accent-deep);
+}
+.chart-empty-icon svg{ width:19px; height:19px; }
+.chart-svg{ width:100%; height:300px; display:block; overflow:visible; }
+.chart-grid{ stroke:var(--line-soft); stroke-width:1; }
+.chart-axis-y{ font-variant-numeric:tabular-nums; font-size:10.5px; fill:var(--ink-faint); }
+.chart-axis-x{ font-variant-numeric:tabular-nums; font-size:10.5px; fill:var(--ink-faint); }
+.chart-area{ fill:var(--accent-soft); }
+.chart-line{ fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+.chart-line-sales{ stroke:var(--accent); }
+.chart-line-collected{ stroke:var(--thrive); stroke-dasharray:5 4; }
+.chart-crosshair{ stroke:var(--ink-faint); stroke-width:1; stroke-dasharray:3 3; pointer-events:none; }
+.chart-dot{ stroke:#fff; stroke-width:2; pointer-events:none; }
+.chart-dot-sales{ fill:var(--accent-deep); }
+.chart-dot-collected{ fill:var(--thrive-deep); }
+.chart-overlay{ cursor:crosshair; }
+
+.chart-tooltip{
+  position:absolute; top:4px; z-index:5; background:var(--ink); color:var(--paper);
+  border-radius:10px; padding:10px 13px; font-size:12px; pointer-events:none; min-width:150px;
+  box-shadow:var(--shadow-sm);
+}
+.chart-tooltip-date{ font-family:'Petrona', serif; font-weight:700; font-size:12.5px; margin-bottom:6px; }
+.chart-tooltip-row{ display:flex; align-items:center; gap:7px; padding:2px 0; color:rgba(251,247,238,0.85); }
+.chart-tooltip-row i{ width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+.chart-tooltip-row b{ margin-left:auto; color:#fff; font-variant-numeric:tabular-nums; }
+.chart-tooltip-orders{ margin-top:4px; padding-top:6px; border-top:1px solid rgba(251,247,238,0.15); color:rgba(251,247,238,0.6); font-size:11px; }
+
+/* ---- status split + top products, side by side ---- */
+.rpt-split-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
+@media (max-width:900px){ .rpt-split-grid{ grid-template-columns:1fr; } }
+
+.status-bar{
+  display:flex; width:100%; height:12px; border-radius:999px; overflow:hidden; background:var(--paper-dim);
+  margin-bottom:18px;
+}
+.status-seg{ height:100%; transition:opacity .15s ease; }
+.status-seg:hover{ opacity:.8; }
+.status-rows{ display:flex; flex-direction:column; gap:2px; }
+.status-row{ display:flex; align-items:center; gap:10px; padding:9px 2px; border-bottom:1px solid var(--line-soft); font-size:13px; }
+.status-row:last-child{ border-bottom:none; }
+.status-row-dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.status-name{ font-weight:600; }
+.status-count{ margin-left:auto; font-variant-numeric:tabular-nums; color:var(--ink-soft); }
+.status-pct{ font-variant-numeric:tabular-nums; font-size:11.5px; color:var(--ink-faint); width:38px; text-align:right; }
+
+.lb-list{ display:flex; flex-direction:column; }
+.lb-row{ display:flex; align-items:center; gap:14px; padding:14px 22px; border-bottom:1px solid var(--line-soft); }
+.lb-row:last-child{ border-bottom:none; }
+.lb-row:hover{ background:var(--paper); }
+.lb-rank{
+  width:26px; height:26px; border-radius:50%; background:var(--paper-dim); color:var(--ink-faint);
+  display:flex; align-items:center; justify-content:center; font-family:'Petrona', serif; font-weight:700;
+  font-size:12px; flex-shrink:0;
+}
+.lb-rank-1{ background:#F2D68A; color:#6B5211; }
+.lb-rank-2{ background:var(--paper-dim); color:var(--ink-soft); }
+.lb-rank-3{ background:#E7C3A6; color:#7A4620; }
+.lb-body{ flex:1; min-width:0; }
+.lb-top{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:6px; }
+.lb-name{ font-weight:700; font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lb-revenue{ font-size:13px; color:var(--ink); flex-shrink:0; }
+.lb-bar-track{ height:6px; border-radius:4px; background:var(--paper-dim); overflow:hidden; }
+.lb-bar-fill{ height:100%; border-radius:4px; background:linear-gradient(90deg, var(--accent-bright), var(--accent)); }
+.lb-sub{ font-size:11.5px; color:var(--ink-faint); margin-top:5px; }
+
+@media (max-width:760px){
+  .rpt-hero-row{ grid-template-columns:1fr; }
+  .range-caption{ margin-left:0; width:100%; }
+}
+
+/* ================================================================
+   ACCOUNT — "Shop plate": the seller's own workbench nameplate,
+   riveted at the top corners like a plate bolted onto a workbench,
+   rather than the buyer's holographic ID-badge or admin's ledger
+   stamp. A punch-tag ribbon carries live status; the nav below reads
+   like a toolboard rack rather than a settings menu.
+   ================================================================ */
+.acct-head{ margin-bottom:24px; }
+.acct-head h1{ font-family:'Petrona', serif; font-weight:700; font-size:clamp(22px,2.6vw,28px); }
+.acct-head p{ font-size:13px; color:var(--ink-soft); margin-top:5px; }
+
+.acct-layout{ display:grid; grid-template-columns:284px 1fr; gap:22px; align-items:start; }
+@media (max-width:900px){ .acct-layout{ grid-template-columns:1fr; } }
+
+.acct-panels{ position:relative; transition:min-height .15s ease; }
+
+.acct-rail{ position:sticky; top:88px; display:flex; flex-direction:column; gap:16px; }
+@media (max-width:900px){ .acct-rail{ position:static; } }
+
+.shop-plate{
+  position:relative; background:var(--card); border:1px solid var(--line);
+  border-radius:var(--radius-lg); padding:26px 20px 18px; text-align:center;
+  box-shadow:var(--shadow-sm); overflow:hidden;
+}
+.shop-plate-rivet{
+  position:absolute; top:14px; width:7px; height:7px; border-radius:50%;
+  background:var(--paper-dim); box-shadow:inset 0 1px 2px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.5);
+}
+.shop-plate-rivet.is-left{ left:14px; }
+.shop-plate-rivet.is-right{ right:14px; }
+
+.shop-plate-banner{
+  position:relative; height:88px; margin:-26px -20px 14px;
+  background:linear-gradient(90deg, var(--accent-bright), var(--accent) 55%, var(--accent-deep));
+  background-size:cover; background-position:center;
+}
+.shop-plate-banner-hint{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; color:#fff; opacity:.85; letter-spacing:.02em;
+}
+.shop-plate-banner.has-image .shop-plate-banner-hint{ display:none; }
+.shop-plate-banner-edit{
+  position:absolute; right:8px; bottom:8px; width:28px; height:28px; border-radius:9px;
+  background:rgba(0,0,0,0.45); color:#fff; display:flex; align-items:center; justify-content:center;
+  backdrop-filter:blur(2px);
+}
+.shop-plate-banner-edit:hover{ background:rgba(0,0,0,0.65); }
+.shop-plate-banner-edit svg{ width:14px; height:14px; }
+.shop-plate-banner-edit .spinner{ display:none; width:12px; height:12px; border-width:2px; }
+.shop-plate-banner.is-uploading .shop-plate-banner-edit svg{ display:none; }
+.shop-plate-banner.is-uploading .shop-plate-banner-edit .spinner{ display:inline-block; }
+.shop-plate-banner-remove{
+  position:absolute; left:8px; bottom:8px; width:22px; height:22px; border-radius:7px;
+  background:rgba(0,0,0,0.45); color:#fff; font-size:11px; display:flex; align-items:center; justify-content:center;
+}
+.shop-plate-banner-remove:hover{ background:var(--danger); }
+
+.acct-logo-wrap{ position:relative; width:88px; height:88px; margin:4px auto 14px; }
+.acct-logo{
+  width:100%; height:100%; border-radius:18px; background:var(--ink); color:var(--paper);
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+  font-family:'Petrona', serif; font-weight:700; font-size:26px; letter-spacing:.02em;
+  box-shadow:var(--shadow-sm);
+}
+.acct-logo img{ width:100%; height:100%; object-fit:cover; }
+.acct-logo-edit-btn{
+  position:absolute; bottom:-4px; right:-4px; width:30px; height:30px; border-radius:9px;
+  background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center;
+  border:2px solid var(--card); transition:background .15s ease, transform .15s ease;
+}
+.acct-logo-edit-btn:hover{ background:var(--accent-deep); transform:scale(1.06); }
+.acct-logo-edit-btn svg{ width:13px; height:13px; }
+.acct-logo-edit-btn .spinner{ display:none; width:12px; height:12px; border-width:2px; }
+.acct-logo-wrap.is-uploading .acct-logo-edit-btn svg{ display:none; }
+.acct-logo-wrap.is-uploading .acct-logo-edit-btn .spinner{ display:inline-block; }
+.acct-logo-remove{
+  display:block; margin:0 auto 12px; font-size:11px; font-weight:700; color:var(--ink-faint);
+}
+.acct-logo-remove:hover{ color:var(--danger); }
+
+.shop-plate h2{ font-family:'Petrona', serif; font-weight:700; font-size:17px; line-height:1.3; }
+.shop-plate .shop-line{
+  display:inline-block; margin-top:4px; font-variant-numeric:tabular-nums; font-size:11px;
+  color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em;
+}
+.shop-plate .shop-stars{ display:flex; justify-content:center; gap:2px; margin-top:10px; }
+.shop-plate .shop-rating-count{ font-size:11px; color:var(--ink-faint); margin-top:3px; }
+
+.shop-plate-badges{ display:flex; gap:6px; justify-content:center; margin-top:12px; flex-wrap:wrap; }
+
+.shop-plate-facts{
+  display:flex; justify-content:center; gap:16px; margin-top:14px; padding-top:14px;
+  border-top:1px dashed var(--line);
+}
+.shop-plate-fact{ display:flex; flex-direction:column; gap:2px; }
+.shop-plate-fact b{ font-variant-numeric:tabular-nums; font-size:13px; }
+.shop-plate-fact span{ font-size:10px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; }
+
+.acct-nav{
+  display:flex; flex-direction:column; gap:3px; background:var(--card);
+  border:1px solid var(--line); border-radius:var(--radius-lg); padding:6px;
+}
+.acct-nav-btn{
+  display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:10px;
+  font-size:13px; font-weight:600; color:var(--ink-soft); text-align:left; width:100%;
+  transition:background .12s ease, color .12s ease;
+}
+.acct-nav-btn svg{ width:17px; height:17px; flex-shrink:0; }
+.acct-nav-btn:hover{ background:var(--paper-dim); color:var(--ink); }
+.acct-nav-btn.is-active{ background:var(--ink); color:var(--paper); }
+.acct-nav-dot{ width:6px; height:6px; border-radius:50%; background:var(--accent-bright); margin-left:auto; flex-shrink:0; }
+
+.acct-panel{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius-lg); padding:26px 28px; }
+.acct-panel-head{ display:flex; align-items:center; gap:10px; }
+.acct-panel-head .bar{ width:4px; height:16px; border-radius:2px; background:var(--accent); flex-shrink:0; }
+.acct-panel-head h3{ font-family:'Petrona', serif; font-weight:700; font-size:16.5px; }
+.acct-panel-sub{ font-size:12.5px; color:var(--ink-faint); margin:6px 0 22px; line-height:1.55; }
+
+.acct-info-list{ display:flex; flex-direction:column; gap:9px; margin-bottom:22px; padding-bottom:22px; border-bottom:1px solid var(--line-soft); }
+.acct-info-row{ display:flex; justify-content:space-between; gap:10px; font-size:12.5px; }
+.acct-info-row .k{ color:var(--ink-faint); }
+.acct-info-row .v{ font-weight:700; text-align:right; }
+
+.acct-doc-link{
+  display:inline-flex; align-items:center; gap:6px; margin-bottom:20px; padding:8px 13px;
+  border-radius:999px; background:var(--paper-dim); font-size:12px; font-weight:700;
+  color:var(--ink-soft); transition:background .12s ease, color .12s ease;
+}
+.acct-doc-link:hover{ background:var(--accent); color:#fff; }
+.acct-doc-link svg{ width:14px; height:14px; }
+
+.acct-address-current{
+  background:var(--paper); border:1px solid var(--line-soft); border-radius:12px;
+  padding:14px 16px; margin-bottom:18px;
+}
+.acct-address-current p{ font-size:13px; line-height:1.55; color:var(--ink-soft); }
+.acct-address-current p.is-empty{ color:var(--ink-faint); font-style:italic; }
+
+.acct-field-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media (max-width:560px){ .acct-field-row{ grid-template-columns:1fr; } }
+
+.acct-form-foot{ display:flex; align-items:center; gap:12px; margin-top:6px; flex-wrap:wrap; }
+.acct-save-msg{ font-size:12px; color:var(--thrive-deep); font-weight:700; opacity:0; transition:opacity .2s ease; display:flex; align-items:center; gap:6px; }
+.acct-save-msg.is-shown{ opacity:1; }
+.acct-save-msg svg{ width:14px; height:14px; }
+
+/* ---- verification / document card inside the Business panel ---- */
+.permit-card{
+  display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:12px;
+  border:1px solid var(--line); background:var(--paper); margin-bottom:20px;
+}
+.permit-card-icon{
+  width:42px; height:42px; border-radius:10px; background:var(--card); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--ink-soft);
+}
+.permit-card-icon svg{ width:19px; height:19px; }
+.permit-card-icon.is-good{ background:var(--thrive-soft); border-color:transparent; color:var(--thrive-deep); }
+.permit-card-body{ flex:1; min-width:0; }
+.permit-card-body strong{ display:block; font-size:13px; }
+.permit-card-body span{ display:block; font-size:11.5px; color:var(--ink-faint); margin-top:1px; }
+.permit-card-actions{ display:flex; gap:6px; flex-shrink:0; }
+
+/* ---- password fields (show/hide toggle + strength meter) ---- */
+.pw-field{ position:relative; }
+.pw-field input{ width:100%; padding-right:42px; }
+.pw-toggle{
+  position:absolute; right:4px; top:50%; transform:translateY(-50%);
+  width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+  color:var(--ink-faint);
+}
+.pw-toggle:hover{ color:var(--ink); background:var(--paper-dim); }
+.pw-toggle svg{ width:16px; height:16px; }
+
+.pw-strength{ display:flex; align-items:center; gap:10px; margin:-8px 0 16px; }
+.pw-strength-track{ flex:1; height:5px; border-radius:99px; background:var(--paper-dim); overflow:hidden; }
+.pw-strength-fill{ height:100%; width:0%; border-radius:99px; background:var(--danger); transition:width .25s ease, background .25s ease; }
+.pw-strength-label{ font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-faint); min-width:58px; text-align:right; }
+
+/* ---- file drop (business permit upload) ---- */
+.file-drop{
+  position:relative; border:1.5px dashed var(--line); border-radius:12px; padding:18px 14px;
+  text-align:center; background:var(--paper); transition:border-color .15s ease, background .15s ease;
+}
+.file-drop:hover{ border-color:var(--accent-line); background:var(--accent-soft); }
+.file-drop.has-file{ border-color:var(--thrive); border-style:solid; background:var(--thrive-soft); }
+.file-drop input[type="file"]{ position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; }
+.file-drop-inner{ display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:none; }
+.file-drop-inner svg{ width:22px; height:22px; color:var(--accent-deep); }
+.file-drop-inner span{ font-size:12.5px; font-weight:700; color:var(--ink); }
+.file-drop-hint{ font-size:11px !important; font-weight:500 !important; color:var(--ink-faint) !important; }
+.file-drop.has-file .file-drop-inner svg{ color:var(--thrive-deep); }
+
+/* ---- document viewer (authenticated fetch + blob preview) ---- */
+.doc-viewer-overlay{
+  position:fixed; inset:0; z-index:90;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(33,26,16,0.72);
+  opacity:0; pointer-events:none; transition:opacity .15s ease;
+  padding:24px;
+}
+.doc-viewer-overlay.is-open{ opacity:1; pointer-events:auto; }
+.doc-viewer-box{
+  width:100%; max-width:720px; max-height:88vh;
+  background:var(--card); border-radius:var(--radius-lg);
+  box-shadow:var(--shadow);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.doc-viewer-head{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:14px 18px; border-bottom:1px solid var(--line);
+}
+.doc-viewer-caption{ font-weight:700; font-size:14px; font-family:'Petrona', serif; }
+.doc-viewer-actions{ display:flex; align-items:center; gap:8px; }
+.doc-viewer-body{ flex:1; min-height:280px; overflow:auto; display:flex; align-items:center; justify-content:center; background:var(--paper-dim); }
+.doc-viewer-img{ max-width:100%; max-height:78vh; display:block; margin:auto; }
+.doc-viewer-frame{ width:100%; height:78vh; border:none; }
+.doc-viewer-loading, .doc-viewer-fallback{
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  color:var(--ink-faint); font-size:13px; padding:40px;
+}
+.doc-viewer-fallback svg{ width:36px; height:36px; }
+.doc-viewer-fallback.is-error{ color:var(--danger); }
+
+/* ---- account status banner ---- */
+.acct-status-banner{
+  display:flex; align-items:flex-start; gap:12px;
+  padding:14px 16px; border-radius:var(--radius-md); margin-bottom:18px;
+  border:1px solid transparent;
+}
+.acct-status-banner svg{ width:19px; height:19px; flex-shrink:0; margin-top:1px; }
+.acct-status-banner strong{ display:block; font-size:13px; margin-bottom:2px; }
+.acct-status-banner p{ font-size:12.5px; line-height:1.5; }
+.acct-status-banner.is-warn{ background:var(--warn-soft); border-color:rgba(196,138,30,0.3); color:var(--warn-deep); }
+.acct-status-banner.is-danger{ background:var(--danger-soft); border-color:rgba(178,58,46,0.25); color:var(--danger-deep); }
+.acct-status-banner.is-info{ background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent-deep); }
+
+/* ---- unsaved-changes indicator ---- */
+.unsaved-pill{
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:11.5px; font-weight:700; color:var(--warn-deep);
+  background:var(--warn-soft); border-radius:999px; padding:4px 10px 4px 8px;
+  opacity:0; transform:translateY(2px); transition:opacity .15s ease, transform .15s ease;
+  pointer-events:none;
+}
+.unsaved-pill.is-shown{ opacity:1; transform:translateY(0); }
+.unsaved-pill::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--warn-deep); flex-shrink:0; }
+.acct-nav-dot.is-unsaved{ background:var(--warn-deep) !important; }
+
+/* ---- field character counters + inline validation ---- */
+.field-group-head{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+.field-count{ font-size:10.5px; color:var(--ink-faint); font-variant-numeric:tabular-nums; }
+.field-count.is-near{ color:var(--warn-deep); font-weight:700; }
+.field-count.is-over{ color:var(--danger); font-weight:700; }
+
+.field-group input.is-invalid,
+.field-group select.is-invalid{ border-color:var(--danger); background:var(--danger-soft); }
+.field-inline-error{
+  font-size:11px; color:var(--danger); font-weight:600; margin-top:-2px;
+  display:none;
+}
+.field-inline-error.is-shown{ display:block; }
+.field-group.is-valid input{ border-color:var(--thrive); }
+
+/* ---- permit / logo file preview thumbnails ---- */
+.file-drop-thumb{
+  width:100%; max-height:120px; object-fit:contain; border-radius:8px;
+  background:var(--paper-dim); margin-bottom:2px;
+}
+
+/* ---- logo crop modal ---- */
+.crop-stage{
+  position:relative; width:280px; height:280px; margin:0 auto;
+  border-radius:50%; overflow:hidden; background:var(--ink); cursor:grab;
+  touch-action:none; box-shadow:0 0 0 3px var(--paper-dim), 0 0 0 4px var(--line);
+}
+.crop-stage.is-dragging{ cursor:grabbing; }
+.crop-stage canvas{ display:block; width:100%; height:100%; }
+.crop-controls{ display:flex; align-items:center; gap:12px; margin:18px 4px 4px; }
+.crop-controls svg{ width:17px; height:17px; color:var(--ink-faint); flex-shrink:0; }
+.crop-controls input[type="range"]{ flex:1; accent-color:var(--accent); }
+.crop-hint{ text-align:center; font-size:11.5px; color:var(--ink-faint); margin-top:10px; }

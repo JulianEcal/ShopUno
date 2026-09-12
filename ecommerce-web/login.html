@@ -4,10 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sign In · ShopUno</title>
+<meta name="theme-color" content="#211a10">
+<link rel="icon" type="image/png" href="assets/img/favicon-32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="assets/img/favicon-64.png" sizes="64x64">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/login.css">
+<!-- buyer.css added for the Forgot Password modal (.modal-overlay / .modal-box / .field-group / .btn)
+     adjust this path if your project keeps it somewhere other than assets/css/ -->
+<link rel="stylesheet" href="assets/css/buyer.css">
+<style>
+  /* Tone-on-tone "ShopUno" texture on the visible login surfaces — the
+     sign-in/sign-up card and the sliding teal/gold accent panel — since
+     login.css isn't available here to edit directly. isolation:isolate
+     only scopes the pseudo-element's z-index to its own panel; it never
+     touches position/layout, so it's safe next to whatever sliding-panel
+     positioning login.css already has set up. */
+  .form-panel, .overlay-panel{ isolation:isolate; }
+  .form-panel::before, .overlay-panel::before{
+    content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+    background-repeat:repeat; background-size:240px 130px;
+  }
+  .form-panel::before{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='130' viewBox='0 0 240 130'%3E%3Cg fill='%230a4038' fill-opacity='0.055' font-family='JetBrains Mono, monospace' font-weight='700' font-size='17' transform='rotate(-18 120 65)'%3E%3Ctext x='-10' y='30'%3EShopUno%3C/text%3E%3Ctext x='120' y='30'%3EShopUno%3C/text%3E%3Ctext x='-70' y='95'%3EShopUno%3C/text%3E%3Ctext x='60' y='95'%3EShopUno%3C/text%3E%3C/g%3E%3C/svg%3E");
+  }
+  .overlay-panel::before{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='130' viewBox='0 0 240 130'%3E%3Cg fill='%23ffffff' fill-opacity='0.09' font-family='JetBrains Mono, monospace' font-weight='700' font-size='17' transform='rotate(-18 120 65)'%3E%3Ctext x='-10' y='30'%3EShopUno%3C/text%3E%3Ctext x='120' y='30'%3EShopUno%3C/text%3E%3Ctext x='-70' y='95'%3EShopUno%3C/text%3E%3Ctext x='60' y='95'%3EShopUno%3C/text%3E%3C/g%3E%3C/svg%3E");
+  }
+</style>
 </head>
 <body class="login-page">
 
@@ -20,11 +46,7 @@
 
           <div class="brand-mark">
             <span class="brand-seal" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                <path d="M4.5 8.5h15l-1.4 10.3a2 2 0 0 1-2 1.7H7.9a2 2 0 0 1-2-1.7L4.5 8.5Z"/>
-                <path d="M8.5 8.5V6.8a3.5 3.5 0 0 1 7 0v1.7"/>
-                <path d="M9 12v3M15 12v3"/>
-              </svg>
+              <img src="/assets/img/logo-mark.png" alt="" width="30" height="30">
             </span>
             <span class="brand-word">ShopUno</span>
           </div>
@@ -83,7 +105,7 @@
           </button>
 
           <div class="auth-foot">
-            <a href="#" class="forgot-link">Forgot password?</a>
+            <a href="#" class="forgot-link" id="forgotLink">Forgot password?</a>
           </div>
 
           <p class="mobile-toggle">Don't have an account?
@@ -108,6 +130,68 @@
             </div>
           </div>
         </form>
+
+        <!-- Shown instead of the form, only for accounts that are both a
+             Buyer and a Seller (see UserResource `dual_access`), right
+             after credentials check out. login.js toggles which of these
+             two siblings is visible; it never removes the form from the
+             DOM, so "Back" can restore it without a re-fetch. -->
+        <div class="auth-form role-choice" id="roleChoicePanel" hidden>
+          <button type="button" class="role-choice-back" id="roleChoiceBack">
+            Back
+          </button>
+
+          <div class="brand-mark">
+            <span class="brand-seal" aria-hidden="true">
+              <img src="/assets/img/logo-mark.png" alt="" width="30" height="30">
+            </span>
+            <span class="brand-word">ShopUno</span>
+          </div>
+
+          <span class="eyebrow"><span class="stamp"></span>Welcome back</span>
+          <h1 id="roleChoiceGreeting">How do you want to continue?</h1>
+          <p class="auth-sub">This account has access to both a buyer and a seller view.</p>
+
+          <div class="role-choice-options">
+            <button type="button" class="role-choice-option" id="roleChoiceBuyer" data-role="buyer">
+              <span class="role-choice-seal" aria-hidden="true">
+                <svg viewBox="0 0 72 72">
+                  <circle class="rcs-dash" cx="36" cy="36" r="31"/>
+                  <circle class="rcs-arc" cx="36" cy="36" r="24"/>
+                  <circle class="rcs-disc" cx="36" cy="36" r="19"/>
+                  <path class="rcs-icon" d="M28 32h16l-1.4 12a2 2 0 0 1-2 1.8H31.4a2 2 0 0 1-2-1.8L28 32z"/>
+                  <path class="rcs-icon" d="M31 32v-2.5a5 5 0 0 1 10 0V32"/>
+                </svg>
+              </span>
+              <span class="role-choice-text">
+                <span class="role-choice-title">Buyer<span class="role-choice-tag" data-last-used="buyer" hidden>Last used</span></span>
+                <span class="role-choice-sub">Shop, order, and track your deliveries.</span>
+              </span>
+            </button>
+            <button type="button" class="role-choice-option" id="roleChoiceSeller" data-role="seller">
+              <span class="role-choice-seal" aria-hidden="true">
+                <svg viewBox="0 0 72 72">
+                  <circle class="rcs-dash" cx="36" cy="36" r="31"/>
+                  <circle class="rcs-arc" cx="36" cy="36" r="24"/>
+                  <circle class="rcs-disc" cx="36" cy="36" r="19"/>
+                  <path class="rcs-icon" d="M27 33l1.5-6h15l1.5 6"/>
+                  <path class="rcs-icon" d="M27 33a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/>
+                  <path class="rcs-icon" d="M29 33v9h14v-9"/>
+                </svg>
+              </span>
+              <span class="role-choice-text">
+                <span class="role-choice-title">Seller<span class="role-choice-tag" data-last-used="seller" hidden>Last used</span></span>
+                <span class="role-choice-sub">Manage your shop, products, and orders.</span>
+              </span>
+            </button>
+          </div>
+
+          <p class="role-choice-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            You can switch roles anytime from your account menu.
+          </p>
+
+        </div>
       </section>
 
       <!-- ===================== SIGN UP (4-step buyer wizard) ===================== -->
@@ -118,11 +202,7 @@
 
           <div class="brand-mark">
             <span class="brand-seal" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                <path d="M4.5 8.5h15l-1.4 10.3a2 2 0 0 1-2 1.7H7.9a2 2 0 0 1-2-1.7L4.5 8.5Z"/>
-                <path d="M8.5 8.5V6.8a3.5 3.5 0 0 1 7 0v1.7"/>
-                <path d="M9 12v3M15 12v3"/>
-              </svg>
+              <img src="/assets/img/logo-mark.png" alt="" width="30" height="30">
             </span>
             <span class="brand-word">ShopUno</span>
           </div>
@@ -334,11 +414,7 @@
         <div class="auth-form pending-panel" id="pendingPanel" hidden>
           <div class="brand-mark">
             <span class="brand-seal" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-                <path d="M4.5 8.5h15l-1.4 10.3a2 2 0 0 1-2 1.7H7.9a2 2 0 0 1-2-1.7L4.5 8.5Z"/>
-                <path d="M8.5 8.5V6.8a3.5 3.5 0 0 1 7 0v1.7"/>
-                <path d="M9 12v3M15 12v3"/>
-              </svg>
+              <img src="/assets/img/logo-mark.png" alt="" width="30" height="30">
             </span>
             <span class="brand-word">ShopUno</span>
           </div>
@@ -374,14 +450,24 @@
       <div class="overlay-container" aria-hidden="true">
         <div class="overlay">
           <div class="overlay-panel overlay-left">
-            <div class="overlay-seal">est.<br>2026</div>
+            <div class="overlay-brand">
+              <div class="overlay-seal">
+                <img src="/assets/img/logo-mark.png" alt="ShopUno" width="72" height="72">
+              </div>
+              <span class="overlay-est">Est. 2026</span>
+            </div>
             <p class="overlay-eyebrow">Already a member?</p>
             <h2>One account,<br>every stall.</h2>
             <p class="overlay-copy">Sign back in to pick up right where you left off — your cart, your orders, your stalls.</p>
             <button type="button" class="btn-ghost" data-toggle="signin">Sign In</button>
           </div>
           <div class="overlay-panel overlay-right">
-            <div class="overlay-seal">est.<br>2026</div>
+            <div class="overlay-brand">
+              <div class="overlay-seal">
+                <img src="/assets/img/logo-mark.png" alt="ShopUno" width="72" height="72">
+              </div>
+              <span class="overlay-est">Est. 2026</span>
+            </div>
             <p class="overlay-eyebrow">New to ShopUno?</p>
             <h2>The whole<br>market, one login.</h2>
             <p class="overlay-copy">Create an account to start shopping, selling, or delivering — however you show up.</p>
@@ -393,6 +479,81 @@
     </div>
   </main>
 
+  <!-- ===================== FORGOT PASSWORD MODAL ===================== -->
+  <!-- Uses .modal-overlay / .modal-box from buyer.css — this is what carries the
+       darker ambient backdrop, the rotating conic-gradient ring, and the tone-on-tone
+       "ShopUno" texture in the glass. -->
+  <div class="modal-overlay" id="forgotOverlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <span class="eyebrow"><span class="stamp"></span>Password reset</span>
+          <h3>Forgot your password?</h3>
+          <p>Enter the email on your account and we'll send you a reset link.</p>
+        </div>
+        <button class="modal-close" id="forgotClose" aria-label="Close" type="button">✕</button>
+      </div>
+      <form class="modal-body" id="forgotForm" novalidate>
+        <div class="field-group">
+          <label for="forgotEmail">Email address</label>
+          <input type="email" id="forgotEmail" name="forgotEmail" autocomplete="email" required placeholder="you@email.com">
+        </div>
+        <div class="form-error" id="forgotError" role="alert" hidden></div>
+      </form>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" id="forgotCancel">Cancel</button>
+        <button type="submit" form="forgotForm" class="btn btn-primary" id="forgotSubmit">
+          <span class="btn-label">Send Reset Link</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="assets/js/pages/login.js"></script>
+  <script>
+    // Forgot Password modal wiring — kept separate from login.js so it
+    // doesn't depend on internals of that module.
+    (function () {
+      var overlay = document.getElementById('forgotOverlay');
+      var openLink = document.getElementById('forgotLink');
+      var closeBtn = document.getElementById('forgotClose');
+      var cancelBtn = document.getElementById('forgotCancel');
+      var form = document.getElementById('forgotForm');
+      var errorBox = document.getElementById('forgotError');
+
+      function openModal(e) {
+        if (e) e.preventDefault();
+        errorBox.hidden = true;
+        overlay.classList.add('is-open');
+        document.getElementById('forgotEmail').focus();
+      }
+      function closeModal() {
+        overlay.classList.remove('is-open');
+      }
+
+      openLink.addEventListener('click', openModal);
+      closeBtn.addEventListener('click', closeModal);
+      cancelBtn.addEventListener('click', closeModal);
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeModal();
+      });
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var email = document.getElementById('forgotEmail').value.trim();
+        if (!email) {
+          errorBox.textContent = 'Please enter your email address.';
+          errorBox.hidden = false;
+          return;
+        }
+        // TODO: wire this up to your actual password-reset endpoint.
+        errorBox.hidden = true;
+        closeModal();
+      });
+    })();
+  </script>
 </body>
 </html>

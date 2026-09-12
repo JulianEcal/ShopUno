@@ -6,7 +6,7 @@
 // later from inside the app — and is driven by the step wizard in
 // signup-wizard.js.
 
-import { login } from "../auth.js";
+import { login, setActiveView, getActiveView } from "../auth.js";
 import { initSignupWizard } from "./signup-wizard.js";
 
 // Where each role lands after a successful login/registration.
@@ -68,6 +68,53 @@ const loginPassword = document.getElementById("password");
 const loginError = document.getElementById("loginError");
 const loginSubmit = document.getElementById("loginSubmit");
 
+/* ---- dual-access (buyer + seller) picker, shown in place of the form ---- */
+const roleChoicePanel = document.getElementById("roleChoicePanel");
+const roleChoiceGreeting = document.getElementById("roleChoiceGreeting");
+const roleChoiceBuyerBtn = document.getElementById("roleChoiceBuyer");
+const roleChoiceSellerBtn = document.getElementById("roleChoiceSeller");
+const roleChoiceBackBtn = document.getElementById("roleChoiceBack");
+const roleChoiceOptions = [roleChoiceBuyerBtn, roleChoiceSellerBtn];
+
+function showRoleChoice(user) {
+  roleChoiceGreeting.textContent = user?.first_name
+    ? `Welcome back, ${user.first_name}.`
+    : "How do you want to continue?";
+  // Surface which view they used last time so returning users don't have
+  // to think about it twice — purely informational, doesn't pre-select.
+  const lastUsed = getActiveView();
+  roleChoicePanel.querySelectorAll("[data-last-used]").forEach((tag) => {
+    tag.hidden = tag.dataset.lastUsed !== lastUsed;
+  });
+  roleChoiceOptions.forEach((option) => {
+    option.disabled = false;
+    option.classList.remove("is-selecting");
+  });
+  loginForm.hidden = true;
+  roleChoicePanel.hidden = false;
+}
+
+function hideRoleChoice() {
+  roleChoicePanel.hidden = true;
+  loginForm.hidden = false;
+  setLoading(loginSubmit, false);
+}
+
+function chooseView(role, btn) {
+  // Disable both options immediately so a second click (or the other
+  // button) can't fire while the redirect is in flight.
+  roleChoiceOptions.forEach((option) => { option.disabled = true; });
+  btn.classList.add("is-selecting");
+  setActiveView(role);
+  redirectForRole(role, loginError);
+}
+
+roleChoiceBuyerBtn.addEventListener("click", () => chooseView("buyer", roleChoiceBuyerBtn));
+roleChoiceSellerBtn.addEventListener("click", () => chooseView("seller", roleChoiceSellerBtn));
+// "Back" doesn't log the account out — it's already signed in at this point
+// — it just lets them re-check the email/password fields before picking.
+roleChoiceBackBtn.addEventListener("click", hideRoleChoice);
+
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   clearError(loginError);
@@ -83,6 +130,10 @@ loginForm.addEventListener("submit", async (event) => {
   setLoading(loginSubmit, true);
   try {
     const user = await login(email, password);
+    if (user.dual_access) {
+      showRoleChoice(user);
+      return;
+    }
     if (!redirectForRole(user.role, loginError)) setLoading(loginSubmit, false);
   } catch (err) {
     showError(loginError, err.message || "Login failed. Please check your credentials and try again.");
