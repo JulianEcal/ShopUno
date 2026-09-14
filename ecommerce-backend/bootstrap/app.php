@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
     $middleware->alias([
         'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
         'seller' => \App\Http\Middleware\EnsureUserIsSeller::class,
+        'courier' => \App\Http\Middleware\EnsureUserIsCourier::class,
+        'logistics' => \App\Http\Middleware\EnsureUserIsLogistics::class,
     ]);
 
     // API-only app — no 'login' route exists, so guests should

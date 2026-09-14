@@ -242,6 +242,27 @@
               <input type="email" id="signupEmail" name="email" autocomplete="email" required placeholder="you@email.com">
             </div>
 
+            <div class="email-verify-block" id="emailVerifyBlock">
+              <div class="email-verify-row">
+                <button type="button" class="btn-outline-wizard email-verify-send" id="sendOtpBtn">
+                  <span class="btn-label">Send verification code</span>
+                  <span class="btn-spinner" aria-hidden="true"></span>
+                </button>
+                <span class="email-verify-status" id="emailVerifyStatus" hidden></span>
+              </div>
+              <div class="field-group email-verify-code-group" id="otpCodeGroup" hidden>
+                <label for="emailOtpCode">6-digit code</label>
+                <div class="otp-input-row">
+                  <input type="text" id="emailOtpCode" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" autocomplete="one-time-code">
+                  <button type="button" class="btn-primary email-verify-confirm" id="verifyOtpBtn">
+                    <span class="btn-label">Verify</span>
+                    <span class="btn-spinner" aria-hidden="true"></span>
+                  </button>
+                </div>
+                <span class="hint" id="otpHint"></span>
+              </div>
+            </div>
+
             <div class="field-group">
               <label for="signupPassword">Password</label>
               <div class="password-field">

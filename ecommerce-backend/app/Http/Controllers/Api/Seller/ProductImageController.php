@@ -35,17 +35,9 @@ class ProductImageController extends Controller
 
         return response()->json([
             'message' => 'Image uploaded.',
-            'image' => ['id' => $image->id, 'url' => Storage::disk('public')->url($path), 'sort_order' => $image->sort_order],
+            'image' => ['id' => $image->id, 'url' => $image->url, 'sort_order' => $image->sort_order],
         ], 201);
     }
-
-    /**
-     * Kept separate from the general ProductResource conversion above:
-     * a real upload through this endpoint always produces a local
-     * relative path from Storage::store(), so Storage::disk('public')->url()
-     * is always correct here — no need for the "already a full URL" check
-     * ProductResource has to make for seeded/demo image data.
-     */
 
     public function destroy(Request $request, Product $product, ProductImage $image): JsonResponse
     {

@@ -68,6 +68,18 @@ const loginPassword = document.getElementById("password");
 const loginError = document.getElementById("loginError");
 const loginSubmit = document.getElementById("loginSubmit");
 
+// Landed here because a session just ended (inactivity timeout or the
+// backend's 1-hour token expiry) rather than because the person chose to
+// sign out — see auth.js's inactivity watcher and api.js's 401 handling,
+// both of which set this right before redirecting here. sessionStorage
+// (not localStorage) so it's naturally gone once this tab's shown it, and
+// never leaks into some *other* later visit.
+const logoutReason = sessionStorage.getItem("logout_reason");
+if (logoutReason) {
+  showError(loginError, logoutReason);
+  sessionStorage.removeItem("logout_reason");
+}
+
 /* ---- dual-access (buyer + seller) picker, shown in place of the form ---- */
 const roleChoicePanel = document.getElementById("roleChoicePanel");
 const roleChoiceGreeting = document.getElementById("roleChoiceGreeting");

@@ -45,6 +45,6 @@ class Message extends Model
     /** Public URL for the attachment, if any — same public disk as product images. */
     public function attachmentUrl(): ?string
     {
-        return $this->attachment_path ? Storage::disk('public')->url($this->attachment_path) : null;
+        return $this->attachment_path ? \App\Support\StorageUrl::for($this->attachment_path) : null;
     }
 }

@@ -57,6 +57,7 @@ async function request(path, { method = "GET", body } = {}) {
   if (response.status === 401) {
     clearToken();
     if (!location.pathname.endsWith("login.html")) {
+      sessionStorage.setItem("logout_reason", "Your session expired after 1 hour. Please log in again.");
       location.href = "/login.html";
     }
     throw new ApiError("Session expired. Please log in again.", 401, null);
@@ -76,7 +77,7 @@ async function request(path, { method = "GET", body } = {}) {
     // data.message for non-validation errors (403s, business-rule 422s
     // thrown via ValidationException::withMessages, etc).
     const firstFieldError = data?.errors ? Object.values(data.errors)[0]?.[0] : null;
-    throw new ApiError(firstFieldError || data?.message || "Something went wrong.", response.status, data?.errors || null);
+    throw new ApiError(firstFieldError || data?.message || "Something went wrong.", response.status, data?.errors || null, data);
   }
 
   return data;
@@ -101,6 +102,7 @@ export async function fetchAuthedFile(url) {
   if (response.status === 401) {
     clearToken();
     if (!location.pathname.endsWith("login.html")) {
+      sessionStorage.setItem("logout_reason", "Your session expired after 1 hour. Please log in again.");
       location.href = "/login.html";
     }
     throw new ApiError("Session expired. Please log in again.", 401, null);
@@ -114,10 +116,11 @@ export async function fetchAuthedFile(url) {
 }
 
 export class ApiError extends Error {
-  constructor(message, status, fieldErrors) {
+  constructor(message, status, fieldErrors, raw = null) {
     super(message);
     this.status = status;
     this.fieldErrors = fieldErrors;
+    this.raw = raw; // full JSON body, e.g. { retry_after } on a 429
   }
 }
 

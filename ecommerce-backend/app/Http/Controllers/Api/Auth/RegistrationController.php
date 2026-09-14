@@ -9,6 +9,7 @@ use App\Http\Requests\Auth\RegisterLogisticsRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Address;
 use App\Models\Courier;
+use App\Models\EmailOtp;
 use App\Models\LogisticsCompany;
 use App\Models\User;
 use Carbon\Carbon;
@@ -29,6 +30,8 @@ class RegistrationController extends Controller
      */
     public function buyer(RegisterBuyerRequest $request): JsonResponse
     {
+        $this->assertEmailVerified($request);
+
         $user = DB::transaction(function () use ($request) {
             $user = $this->createBaseUser($request, role: 'buyer', status: 'pending');
             $this->createAddress($request, $user);
@@ -37,6 +40,31 @@ class RegistrationController extends Controller
         });
 
         return $this->pendingResponse($user);
+    }
+
+    /**
+     * Confirms the email_verification_token the frontend echoes back (from
+     * EmailVerificationController::verify()) is genuinely a verified,
+     * unexpired token for this exact email — closing the loop on the OTP
+     * gate described in that controller's docblock. RegisterBuyerRequest
+     * already guarantees the field is present (required, non-empty) by the
+     * time this runs.
+     */
+    protected function assertEmailVerified(Request $request): void
+    {
+        $email = strtolower(trim((string) $request->input('email')));
+        $token = (string) $request->input('email_verification_token');
+
+        $otp = EmailOtp::where('email', $email)
+            ->where('verify_token', $token)
+            ->whereNotNull('verified_at')
+            ->first();
+
+        abort_if(
+            ! $otp || $otp->expires_at->isPast(),
+            422,
+            'Please verify your email again before completing sign-up.'
+        );
     }
 
     /**

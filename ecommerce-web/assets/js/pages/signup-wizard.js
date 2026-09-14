@@ -18,6 +18,7 @@
 import { register } from "../auth.js";
 import { escapeHtml } from "../lib/ui.js";
 import { getRegions, getProvinces, getCitiesMunicipalities, getBarangays } from "../lib/psgc.js";
+import { sendEmailOtp, verifyEmailOtp } from "../lib/email-verification.js";
 
 const TOTAL_STEPS = 4;
 const MIN_AGE = 18;
@@ -65,6 +66,13 @@ export function initSignupWizard() {
     idUpload: document.getElementById("idUpload"),
   };
 
+  const sendOtpBtn = document.getElementById("sendOtpBtn");
+  const verifyOtpBtn = document.getElementById("verifyOtpBtn");
+  const otpCodeGroup = document.getElementById("otpCodeGroup");
+  const otpCodeInput = document.getElementById("emailOtpCode");
+  const emailVerifyStatus = document.getElementById("emailVerifyStatus");
+  const otpHint = document.getElementById("otpHint");
+
   const provinceGroup = document.getElementById("provinceGroup");
 
   const fileDrop = document.getElementById("fileDrop");
@@ -85,6 +93,130 @@ export function initSignupWizard() {
   // False for NCR and any other region where cities sit directly under
   // the region — Province is hidden and not required in that case.
   let regionHasProvinces = true;
+
+  /* --------------------------------------------------- email OTP gate ---
+     Step 1 can't advance until the typed email is verified via a 6-digit
+     code (see EmailVerificationController's docblock — this is a gate
+     inside Step 1, not a separate wizard step). `verifiedEmail`/
+     `verificationToken` are cleared the moment the email field no longer
+     matches what was actually verified, so editing the address after
+     verifying forces a fresh code rather than silently registering under
+     a different, unverified address. */
+  let verifiedEmail = null;
+  let verificationToken = null;
+  let resendTimer = null;
+
+  function isEmailVerified() {
+    return verifiedEmail && verificationToken && fields.email.value.trim().toLowerCase() === verifiedEmail;
+  }
+
+  function resetVerification() {
+    verifiedEmail = null;
+    verificationToken = null;
+    if (resendTimer) { clearInterval(resendTimer); resendTimer = null; }
+    otpCodeGroup.hidden = true;
+    otpCodeInput.value = "";
+    otpHint.textContent = "";
+    emailVerifyStatus.hidden = true;
+    sendOtpBtn.hidden = false;
+    sendOtpBtn.disabled = false;
+    sendOtpBtn.querySelector(".btn-label").textContent = "Send verification code";
+    sendOtpBtn.classList.remove("is-loading");
+  }
+
+  function markVerified(email, token) {
+    verifiedEmail = email.trim().toLowerCase();
+    verificationToken = token;
+    if (resendTimer) { clearInterval(resendTimer); resendTimer = null; }
+    otpCodeGroup.hidden = true;
+    sendOtpBtn.hidden = true;
+    emailVerifyStatus.hidden = false;
+    emailVerifyStatus.classList.remove("is-error");
+    emailVerifyStatus.classList.add("is-success");
+    emailVerifyStatus.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M20 6 9 17l-5-5"/></svg> Email verified`;
+  }
+
+  // Editing the email after sending/verifying a code invalidates whatever
+  // was sent for the old address — start over rather than let a stale
+  // "Verified" badge sit next to a different email.
+  fields.email.addEventListener("input", () => {
+    if (verifiedEmail !== null && fields.email.value.trim().toLowerCase() !== verifiedEmail) {
+      resetVerification();
+    }
+  });
+
+  function startResendCooldown(seconds) {
+    let remaining = seconds;
+    sendOtpBtn.disabled = true;
+    const label = sendOtpBtn.querySelector(".btn-label");
+    const tick = () => {
+      label.textContent = remaining > 0 ? `Resend code (${remaining}s)` : "Resend code";
+      if (remaining <= 0) {
+        clearInterval(resendTimer);
+        resendTimer = null;
+        sendOtpBtn.disabled = false;
+      }
+      remaining -= 1;
+    };
+    tick();
+    resendTimer = setInterval(tick, 1000);
+  }
+
+  sendOtpBtn.addEventListener("click", async () => {
+    const email = fields.email.value.trim();
+    if (!email || !fields.email.checkValidity()) {
+      showError("Please enter a valid email address first.");
+      fields.email.focus();
+      return;
+    }
+    clearError();
+    sendOtpBtn.disabled = true;
+    sendOtpBtn.classList.add("is-loading");
+    try {
+      const res = await sendEmailOtp(email);
+      otpCodeGroup.hidden = false;
+      otpCodeInput.value = "";
+      otpCodeInput.focus();
+      emailVerifyStatus.hidden = false;
+      emailVerifyStatus.classList.remove("is-error", "is-success");
+      emailVerifyStatus.textContent = `Code sent to ${email}`;
+      otpHint.textContent = "Check your inbox — the code expires in 10 minutes.";
+      startResendCooldown(res?.resend_after || 45);
+    } catch (err) {
+      if (err?.status === 429 && err?.raw?.retry_after) {
+        startResendCooldown(err.raw.retry_after);
+      } else {
+        sendOtpBtn.disabled = false;
+      }
+      showError(err?.message || "Couldn't send a verification code. Please try again.");
+    } finally {
+      sendOtpBtn.classList.remove("is-loading");
+    }
+  });
+
+  verifyOtpBtn.addEventListener("click", async () => {
+    const email = fields.email.value.trim();
+    const code = otpCodeInput.value.trim();
+    if (code.length !== 6) {
+      otpHint.textContent = "Enter the 6-digit code from your email.";
+      otpHint.classList.add("is-error");
+      return;
+    }
+    otpHint.classList.remove("is-error");
+    otpHint.textContent = "";
+    verifyOtpBtn.disabled = true;
+    verifyOtpBtn.classList.add("is-loading");
+    try {
+      const res = await verifyEmailOtp(email, code);
+      markVerified(email, res.email_verification_token);
+    } catch (err) {
+      otpHint.textContent = err?.message || "That code didn't work — please try again.";
+      otpHint.classList.add("is-error");
+    } finally {
+      verifyOtpBtn.disabled = false;
+      verifyOtpBtn.classList.remove("is-loading");
+    }
+  });
 
   /* ------------------------------------------------------------- helpers */
   function showError(message) {
@@ -163,6 +295,9 @@ export function initSignupWizard() {
       }
       if (fields.password.value !== fields.confirm.value) {
         return "Passwords don't match.";
+      }
+      if (!isEmailVerified()) {
+        return "Please verify your email address before continuing.";
       }
       return null;
     }
@@ -407,6 +542,7 @@ export function initSignupWizard() {
     // isn't silently lost if/when the backend adds support. The API just
     // ignores unrecognized fields today.
     fd.append("id_type", fields.idType.value);
+    fd.append("email_verification_token", verificationToken || "");
     return fd;
   }
 

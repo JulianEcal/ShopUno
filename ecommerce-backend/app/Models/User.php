@@ -45,11 +45,7 @@ class User extends Authenticatable
             return null;
         }
 
-        if (str_starts_with($this->avatar_path, 'http://') || str_starts_with($this->avatar_path, 'https://')) {
-            return $this->avatar_path;
-        }
-
-        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->avatar_path);
+        return \App\Support\StorageUrl::for($this->avatar_path);
     }
 
     // ---- Role-specific extension tables ----

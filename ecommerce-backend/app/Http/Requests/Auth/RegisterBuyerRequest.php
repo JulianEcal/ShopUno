@@ -14,7 +14,11 @@ class RegisterBuyerRequest extends FormRequest
     public function rules(): array
     {
         return array_merge($this->baseRules(), [
-            // buyer has no extra fields beyond the shared profile + address
+            // Echoed back from POST /email/verification/verify — see
+            // RegistrationController::assertEmailVerified(). signup-wizard.js
+            // now collects this for real (the "verify your email" gate
+            // inside Step 1), so it's required rather than nullable.
+            'email_verification_token' => ['required', 'string'],
         ]);
     }
 

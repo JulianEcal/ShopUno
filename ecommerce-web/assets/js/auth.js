@@ -74,4 +74,41 @@ export function requireAuth() {
     // before the browser actually navigates away. Throwing halts it here.
     throw new Error("Not authenticated");
   }
+  startInactivityWatcher();
+}
+
+/* ---------------- inactivity timeout ----------------
+   Complements the backend's fixed 60-minute token lifetime (see
+   config/sanctum.php's 'expiration') with a second, independent trigger:
+   signing out after 60 minutes of no clicks/typing/scrolling at all, even
+   if that's well before the token's own hard cutoff. Whichever limit is
+   hit first ends the session — this one covers "walked away from an
+   open tab", the token expiration covers "left it open and came back
+   after a day".
+
+   Every protected page calls requireAuth() through its shell's initShell(),
+   so hooking the watcher in there (rather than requiring every page to
+   remember to set it up itself) means it's on everywhere a session
+   actually exists, and nowhere else. The `started` guard just protects
+   against double-registering listeners if requireAuth() were ever called
+   more than once on the same page. */
+const INACTIVITY_TIMEOUT_MS = 60 * 60 * 1000; // 1 hour — matches the backend's token lifetime
+const ACTIVITY_EVENTS = ["mousedown", "keydown", "scroll", "touchstart"];
+let inactivityTimer = null;
+let watcherStarted = false;
+
+function startInactivityWatcher() {
+  if (watcherStarted) return;
+  watcherStarted = true;
+
+  const resetTimer = () => {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+      sessionStorage.setItem("logout_reason", "You were signed out after an hour of inactivity.");
+      logout();
+    }, INACTIVITY_TIMEOUT_MS);
+  };
+
+  ACTIVITY_EVENTS.forEach((evt) => document.addEventListener(evt, resetTimer, { passive: true }));
+  resetTimer();
 }

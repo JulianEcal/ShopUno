@@ -866,6 +866,41 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   transition:border-color .18s ease, background .18s ease, transform .18s ease;
 }
 .btn-outline-wizard:hover{ background:#f5f5f5; border-color:var(--rm-gray); transform:translateY(-2px); }
+.btn-outline-wizard:disabled{ opacity:0.6; cursor:not-allowed; transform:none; }
+.btn-outline-wizard .btn-spinner{
+  border-color: rgba(22,22,22,0.2);
+  border-top-color: var(--rm-black);
+}
+.btn-outline-wizard.is-loading{ opacity:0.85; pointer-events:none; }
+.btn-outline-wizard.is-loading .btn-label{ opacity:0.6; }
+.btn-outline-wizard.is-loading .btn-spinner{ display:inline-block; }
+
+/* ---------- email OTP verification (Step 1 gate) ---------- */
+.email-verify-block{ margin-top:-6px; display:flex; flex-direction:column; gap:10px; }
+.email-verify-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.email-verify-row .btn-outline-wizard{ width:auto; padding:10px 18px; font-size:13.5px; }
+
+.email-verify-status{
+  display:inline-flex; align-items:center; gap:6px;
+  font-family:'Inter', sans-serif; font-size:13px; color:var(--ink-soft);
+}
+.email-verify-status.is-success{ color:var(--teal); font-weight:600; }
+.email-verify-status.is-success svg{ stroke:var(--teal); }
+.email-verify-status.is-error{ color:var(--chili); }
+
+.email-verify-code-group{ background:var(--paper-dim); border:1px solid var(--line); border-radius:14px; padding:14px 16px; }
+.otp-input-row{ display:flex; gap:10px; align-items:stretch; }
+.otp-input-row input{
+  flex:1; min-width:0;
+  font-family:'JetBrains Mono', monospace;
+  letter-spacing:4px;
+  text-align:center;
+  font-size:16px;
+}
+.otp-input-row .btn-primary{ width:auto; flex:0 0 auto; padding:10px 22px; margin-top:0; font-size:13.5px; }
+
+.hint{ font-family:'Inter', sans-serif; font-size:12px; color:var(--ink-soft); }
+.hint.is-error{ color:var(--chili); }
 
 /* ---------- file upload (verification step) ---------- */
 .file-drop{

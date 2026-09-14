@@ -1,295 +1,296 @@
 <?php
 
-namespace App\Http\Controllers\Api\Seller;
+namespace App\Http\Controllers\Api\Buyer;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Seller\UpdateOrderStatusRequest;
+use App\Http\Requests\Buyer\RateOrderRequest;
 use App\Http\Resources\OrderResource;
-use App\Models\Delivery;
-use App\Models\DeliveryStatusHistory;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
-use App\Models\Setting;
+use App\Models\Product;
+use App\Models\ProductVariation;
+use App\Models\Rating;
+use App\Models\Voucher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
-    /**
-     * GET /seller/orders?status=&search=
-     * The seller's own orders — every status, newest first. 'delivery' is
-     * eager-loaded (not just the order's own 'status' column) because the
-     * order stays 'to_ship' throughout the whole confirm-ready ->
-     * logistics-confirm -> courier-accept hand-off; without it the UI can't
-     * tell "not packed yet" apart from "packed, waiting on logistics."
-     */
     public function index(Request $request): JsonResponse
     {
-        $query = $request->user()->seller
-            ->orders()
-            ->with(['buyer', 'items', 'logisticsCompany', 'delivery', 'voucher']);
-
-        if ($status = $request->query('status')) {
-            $query->where('status', $status);
-        }
-
-        if ($search = $request->query('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('id', 'like', "%{$search}%")
-                    ->orWhereHas('buyer', function ($b) use ($search) {
-                        $b->where('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        $orders = $query->latest()->paginate(20);
+        $orders = $request->user()->orders()
+            ->with(['seller', 'items', 'logisticsCompany', 'voucher'])
+            ->latest()
+            ->paginate(20);
 
         return $this->paginatedResponse(OrderResource::collection($orders), $orders);
     }
 
     public function show(Request $request, Order $order): JsonResponse
     {
-        $this->ensureOwnedBySeller($request, $order);
+        $this->ensureOwnedByBuyer($request, $order);
 
         return response()->json([
-            'order' => new OrderResource($order->load(['buyer', 'items', 'statusHistory', 'logisticsCompany', 'delivery', 'voucher'])),
+            'order' => new OrderResource($order->load(['seller', 'items', 'statusHistory', 'logisticsCompany', 'voucher'])),
         ]);
     }
 
     /**
-     * A seller can now only CANCEL an order directly — everything from
-     * "ready to ship" onward is driven by the Delivery pipeline (logistics
-     * review, then courier accept/pickup/deliver), not manual seller
-     * status changes. This used to let a seller walk an order all the way
-     * to 'delivered' themselves, which quietly meant no Delivery record
-     * ever got created and the courier system never had anything to work
-     * with — see confirmReady() below for the actual replacement.
+     * POST /orders — checkout.
+     * A cart can span multiple sellers; this splits it into one Order per
+     * seller (each with its own status/tracking), all created atomically.
+     * Body: { "address_id": 1, "vouchers": [...], "logistics_choices": [{ "seller_id": 1, "logistics_company_id": 2 }] }
+     * — address_id is REQUIRED: it's one of the buyer's own saved
+     * addresses (see Buyer\AddressController), and its fields are
+     * snapshotted onto every order created here (same address for all of
+     * them — Shopee-style checkout picks one delivery address for the
+     * whole cart, not per seller).
+     * logistics_choices is TEMPORARILY OPTIONAL: the "buyer picks a
+     * logistics company per seller at checkout" flow (see README
+     * "Logistics-Reviewed Delivery Flow") isn't built on the frontend yet,
+     * so an order with no choice for a given seller is just created with
+     * logistics_company_id left null for that seller — checkout shouldn't
+     * hard-block on a step that doesn't exist yet. Any choices that ARE
+     * sent are still validated and applied normally. Re-tighten this back
+     * to required once the frontend has a real picker.
      */
-    public function updateStatus(UpdateOrderStatusRequest $request, Order $order): JsonResponse
+    public function store(Request $request): JsonResponse
     {
-        $this->ensureOwnedBySeller($request, $order);
+        $request->validate([
+            'address_id' => [
+                'required',
+                'exists:addresses,id',
+                function ($attribute, $value, $fail) use ($request) {
+                    $owned = \App\Models\Address::where('id', $value)->where('user_id', $request->user()->id)->exists();
+                    if (! $owned) {
+                        $fail('That address does not belong to you.');
+                    }
+                },
+            ],
 
-        $newStatus = $request->validated('status');
+            'vouchers' => ['nullable', 'array'],
+            'vouchers.*.seller_id' => ['required_with:vouchers', 'exists:sellers,id'],
+            'vouchers.*.code' => ['required_with:vouchers', 'string'],
 
-        if ($newStatus !== 'cancelled') {
-            abort(422, "Sellers can only cancel an order directly. Use POST /seller/orders/{$order->id}/confirm-ready to hand it off for delivery.");
-        }
-
-        if ($order->status !== 'to_ship') {
-            abort(409, 'Orders can only be cancelled while still to_ship.');
-        }
-
-        /*
-         * order.status deliberately stays 'to_ship' through the entire
-         * confirm-ready -> logistics-confirm -> courier-accept hand-off
-         * (see confirmReady() above and README "Logistics-Reviewed
-         * Delivery Flow") — nothing buyer-visible changes until a courier
-         * actually picks up. That means the status check above, on its
-         * own, does NOT catch an order that's already been handed off:
-         * a seller could otherwise cancel an order that a courier has
-         * already accepted (or that's sitting in a logistics company's
-         * confirmed queue), leaving an orphaned Delivery a courier could
-         * still complete — flipping is_paid on a "cancelled" order and
-         * emailing the seller a delivery-complete notice for it. Block
-         * on the Delivery record directly, the same way confirmReady()
-         * blocks the reverse case.
-         */
-        if ($order->delivery) {
-            abort(409, 'This order has already been handed off for delivery and can no longer be cancelled directly — contact your logistics company or file a complaint if it needs to be stopped.');
-        }
-
-        DB::transaction(function () use ($request, $order, $newStatus) {
-            $order->update(['status' => $newStatus]);
-
-            OrderStatusHistory::create([
-                'order_id' => $order->id,
-                'status' => $newStatus,
-                'note' => $request->validated('note'),
-                'changed_by_user_id' => $request->user()->id,
-            ]);
-        });
-
-        return response()->json([
-            'message' => 'Order cancelled.',
-            'order' => new OrderResource($order->fresh(['buyer', 'items', 'statusHistory'])),
+            'logistics_choices' => ['nullable', 'array'],
+            'logistics_choices.*.seller_id' => ['required', 'exists:sellers,id'],
+            'logistics_choices.*.logistics_company_id' => [
+                'required',
+                'exists:logistics_companies,id',
+                function ($attribute, $value, $fail) {
+                    $company = \App\Models\LogisticsCompany::find($value);
+                    if ($company && $company->user->status !== 'active') {
+                        $fail('The selected logistics company is not currently active.');
+                    }
+                },
+            ],
         ]);
-    }
 
-    /**
-     * POST /seller/orders/{order}/confirm-ready
-     * The seller's actual hand-off point: "I've packed this, it's ready
-     * for delivery." This is what creates the Delivery record — starting
-     * at 'awaiting_logistics_confirmation', visible only to the specific
-     * logistics company the buyer chose at checkout, not an open pool.
-     * The order's own status stays 'to_ship' throughout — from the
-     * buyer's view nothing changes until a courier actually picks it up.
-     */
-    public function confirmReady(Request $request, Order $order): JsonResponse
-    {
-        $this->ensureOwnedBySeller($request, $order);
+        $address = \App\Models\Address::findOrFail($request->input('address_id'));
 
-        if ($order->status !== 'to_ship') {
-            abort(409, "Order must be 'to_ship' to confirm ready — it is currently '{$order->status}'.");
+        $cart = $request->user()->cart()->with('items.product', 'items.variation')->first();
+
+        if (! $cart || $cart->items->isEmpty()) {
+            throw ValidationException::withMessages(['cart' => ['Your cart is empty.']]);
         }
 
-        if (! $order->logistics_company_id) {
-            abort(422, 'This order has no logistics company selected — the buyer must choose one at checkout.');
-        }
+        $itemsBySeller = $cart->items->groupBy(fn ($item) => $item->product->seller_id);
+        $voucherInputs = collect($request->input('vouchers', []))->keyBy('seller_id');
+        $logisticsChoices = collect($request->input('logistics_choices', []))->keyBy('seller_id');
 
-        if ($order->delivery) {
-            abort(409, 'This order has already been handed off for delivery.');
-        }
+        $orders = DB::transaction(function () use ($request, $itemsBySeller, $voucherInputs, $logisticsChoices, $cart, $address) {
+            $createdOrders = [];
 
-        $delivery = DB::transaction(function () use ($request, $order) {
-            $delivery = Delivery::create([
-                'order_id' => $order->id,
-                'logistics_company_id' => $order->logistics_company_id,
-                'status' => 'awaiting_logistics_confirmation',
-            ]);
+            foreach ($itemsBySeller as $sellerId => $items) {
+                $this->assertStockAvailable($items);
 
-            DeliveryStatusHistory::create([
-                'delivery_id' => $delivery->id,
-                'status' => 'awaiting_logistics_confirmation',
-                'note' => 'Seller confirmed order ready for pickup.',
-                'changed_by_user_id' => $request->user()->id,
-            ]);
+                $subtotal = $items->sum(fn ($item) => $item->unitPrice() * $item->quantity);
+                [$voucher, $discount] = $this->resolveVoucher($sellerId, $subtotal, $voucherInputs, $request->user()->id);
 
-            return $delivery;
+                $order = Order::create([
+                    'buyer_id' => $request->user()->id,
+                    'seller_id' => $sellerId,
+                    'voucher_id' => $voucher?->id,
+                    'logistics_company_id' => $logisticsChoices[$sellerId]['logistics_company_id'] ?? null,
+                    'subtotal' => $subtotal,
+                    'discount' => $discount,
+                    'total' => round($subtotal - $discount, 2),
+                    'status' => 'to_ship',
+                    'payment_method' => 'cod',
+                    'is_paid' => false,
+
+                    // Snapshotted from the buyer's chosen address book entry
+                    // — see the shipping snapshot migration's note on why
+                    // this is copied rather than left as a live reference.
+                    'shipping_address_id' => $address->id,
+                    'shipping_label' => $address->label,
+                    'shipping_recipient_name' => $address->recipient_name,
+                    'shipping_recipient_phone' => $address->recipient_phone,
+                    'shipping_province' => $address->province,
+                    'shipping_municipality' => $address->municipality,
+                    'shipping_barangay' => $address->barangay,
+                    'shipping_street' => $address->street,
+                    'shipping_house_number' => $address->house_number,
+                ]);
+
+                foreach ($items as $item) {
+                    $order->items()->create([
+                        'product_id' => $item->product_id,
+                        'product_variation_id' => $item->product_variation_id,
+                        'product_name' => $item->product->name,
+                        'unit_price' => $item->unitPrice(),
+                        // Snapshotted alongside unit_price so order history
+                        // can still show "was ₱X" even after the seller's
+                        // discount later changes or expires — see the
+                        // migration note on this column.
+                        'original_unit_price' => $item->originalUnitPrice(),
+                        'quantity' => $item->quantity,
+                        'subtotal' => $item->unitPrice() * $item->quantity,
+                    ]);
+
+                    $this->decrementStock($item);
+                }
+
+                if ($voucher) {
+                    $voucher->increment('used_count');
+                }
+
+                OrderStatusHistory::create([
+                    'order_id' => $order->id,
+                    'status' => 'to_ship',
+                    'note' => 'Order placed.',
+                    'changed_by_user_id' => $request->user()->id,
+                ]);
+
+                $createdOrders[] = $order;
+            }
+
+            $cart->items()->delete();
+
+            return $createdOrders;
         });
 
         return response()->json([
-            'message' => 'Order handed off — awaiting logistics company confirmation.',
-            'delivery' => $delivery,
+            'message' => count($orders) > 1
+                ? 'Checkout complete — split into ' . count($orders) . ' orders (one per seller).'
+                : 'Order placed.',
+            'orders' => OrderResource::collection(
+                collect($orders)->map(fn ($o) => $o->load(['seller', 'items', 'logisticsCompany', 'voucher']))
+            ),
         ], 201);
     }
 
     /**
-     * GET /seller/orders/{order}/waybill
-     * The last unbuilt Seller function from the checklist: "Prepare orders
-     * — pack items, print waybill/shipping label." This is the packing
-     * step, so it deliberately does NOT require confirm-ready to have
-     * happened yet — a seller prints the label while packing, then hands
-     * off with confirm-ready once it's on the box.
-     *
-     * The waybill number is generated once and reused on every reprint
-     * (it's a durable label/tracking number for the physical package),
-     * not regenerated per request. Returns the structured data a frontend
-     * would need to render its own label; see printWaybill() below for a
-     * ready-to-print HTML version that needs no extra frontend work.
+     * Looks up and validates a voucher for one seller's portion of checkout.
+     * Returns [null, 0] if no code was given for this seller. Throws if a
+     * code WAS given but doesn't exist or isn't currently usable — a
+     * silently-ignored bad code would be a confusing, hard-to-notice bug.
+     * $buyerId is required (not just for the message) so a per_user_limit
+     * voucher is actually enforced here — see Voucher::isValidFor().
      */
-    public function waybill(Request $request, Order $order): JsonResponse
+    protected function resolveVoucher(int $sellerId, float $subtotal, $voucherInputs, int $buyerId): array
     {
-        $order = $this->prepareWaybill($request, $order);
-
-        return response()->json(['waybill' => $this->waybillData($order)]);
-    }
-
-    /**
-     * GET /seller/orders/{order}/waybill/print
-     * Same data as waybill(), rendered as a self-contained, printable HTML
-     * label — open it in a new tab and print (or "Save as PDF") straight
-     * from the browser. Deliberately not a generated PDF file: this sandbox
-     * has no access to packagist.org (see README), so pulling in a PDF
-     * library isn't an option here — a plain print-styled HTML view needs
-     * no new dependency and gets a seller the same physical result.
-     */
-    public function printWaybill(Request $request, Order $order): Response
-    {
-        $order = $this->prepareWaybill($request, $order);
-
-        return response(
-            view('waybills.show', ['waybill' => $this->waybillData($order)])->render()
-        )->header('Content-Type', 'text/html');
-    }
-
-    /** Shared guard + idempotent number generation for both waybill endpoints above. */
-    protected function prepareWaybill(Request $request, Order $order): Order
-    {
-        $this->ensureOwnedBySeller($request, $order);
-
-        if ($order->status === 'cancelled') {
-            abort(409, 'This order was cancelled — there is nothing to ship.');
+        if (! $voucherInputs->has($sellerId)) {
+            return [null, 0];
         }
 
-        if (! $order->logistics_company_id) {
-            abort(422, 'This order has no logistics company selected — the buyer must choose one at checkout.');
-        }
+        $code = $voucherInputs[$sellerId]['code'];
+        $voucher = Voucher::where('seller_id', $sellerId)->where('code', $code)->first();
 
-        if (! $order->waybill_number) {
-            $order->update([
-                'waybill_number' => $this->generateWaybillNumber($order),
-                'waybill_generated_at' => now(),
+        if (! $voucher || ! $voucher->isValidFor($subtotal, $buyerId)) {
+            throw ValidationException::withMessages([
+                'vouchers' => ["The voucher code \"{$code}\" is invalid, expired, already used up, or doesn't apply to this order."],
             ]);
         }
 
-        return $order->fresh(['buyer', 'seller.user.address', 'logisticsCompany', 'items']);
+        return [$voucher, $voucher->discountFor($subtotal)];
     }
 
     /**
-     * WB + year/month + zero-padded order id, e.g. WB2608000042. Derived
-     * straight from the order's own id, so it's guaranteed unique without
-     * needing a retry-on-collision loop, and it's stable across reprints.
+     * POST /orders/{order}/rating — only after delivery, and only once per order.
+     * For now this always rates the seller (rated_user_id = seller's user) —
+     * once couriers exist, a second rating targeting the courier would use
+     * the same table/endpoint pattern, just a different rated_user_id.
      */
-    protected function generateWaybillNumber(Order $order): string
+    public function rate(RateOrderRequest $request, Order $order): JsonResponse
     {
-        return 'WB'.$order->created_at->format('ym').str_pad((string) $order->id, 6, '0', STR_PAD_LEFT);
-    }
+        $this->ensureOwnedByBuyer($request, $order);
 
-    /** Everything a shipping label needs to show, in one place, for both waybill() and printWaybill(). */
-    protected function waybillData(Order $order): array
-    {
-        $formatAddress = function ($address) {
-            if (! $address) {
-                return null;
-            }
+        if ($order->status !== 'delivered') {
+            abort(409, 'You can only rate an order after it has been delivered.');
+        }
 
-            return collect([
-                $address->house_number, $address->street, $address->barangay,
-                $address->municipality, $address->province,
-            ])->filter()->implode(', ');
-        };
+        $sellerUserId = $order->seller()->first()->user_id;
 
-        return [
-            'waybill_number' => $order->waybill_number,
-            'generated_at' => $order->waybill_generated_at?->toIso8601String(),
+        if (Rating::where('order_id', $order->id)->where('rated_user_id', $sellerUserId)->exists()) {
+            abort(409, 'You have already rated this order.');
+        }
+
+        $rating = Rating::create([
             'order_id' => $order->id,
-            'cod_amount' => (float) $order->total,
+            'rated_by_user_id' => $request->user()->id,
+            'rated_user_id' => $sellerUserId,
+            'score' => $request->validated('score'),
+            'feedback' => $request->validated('feedback'),
+        ]);
 
-            'sender' => [
-                'name' => $order->seller->business_name,
-                'contact_no' => $order->seller->user->contact_no,
-                'address' => $formatAddress($order->seller->user->address),
+        return response()->json([
+            'message' => 'Thanks for your feedback!',
+            'rating' => [
+                'id' => $rating->id,
+                'score' => $rating->score,
+                'feedback' => $rating->feedback,
             ],
-
-            'receiver' => [
-                'name' => $order->shipping_recipient_name ?: trim("{$order->buyer->first_name} {$order->buyer->last_name}"),
-                'contact_no' => $order->shipping_recipient_phone ?: $order->buyer->contact_no,
-                // Always the address snapshotted at checkout (see the
-                // shipping-snapshot migration) — never the buyer's current
-                // live address, which may have since changed or been
-                // deleted entirely. Falls back to null only for orders
-                // placed before this snapshot existed.
-                'address' => $order->shipping_province ? $order->shippingLine() : null,
-            ],
-
-            'logistics_company' => $order->logisticsCompany->company_name,
-
-            'items' => $order->items->map(fn ($item) => [
-                'product_name' => $item->product_name,
-                'quantity' => $item->quantity,
-            ])->all(),
-
-            'platform_name' => Setting::where('key', 'platform_name')->value('value')
-                ?? config('app.name'),
-        ];
+        ], 201);
     }
 
-    protected function ensureOwnedBySeller(Request $request, Order $order): void
+    /**
+     * Re-reads each item's stock with a row lock (SELECT ... FOR UPDATE)
+     * rather than trusting $item->product/$item->variation, which were
+     * loaded before this transaction started and could already be stale
+     * by the time we get here. The lock is held until this transaction
+     * commits or rolls back, so a second checkout racing for the same
+     * last unit blocks here instead of both this and that one reading
+     * "1 in stock" and both succeeding.
+     */
+    protected function assertStockAvailable($items): void
     {
-        if ($order->seller_id !== $request->user()->seller->id) {
+        foreach ($items as $item) {
+            $stock = $item->product_variation_id
+                ? ProductVariation::whereKey($item->product_variation_id)->lockForUpdate()->value('stock')
+                : Product::whereKey($item->product_id)->lockForUpdate()->value('stock');
+
+            if ($item->quantity > $stock) {
+                throw ValidationException::withMessages([
+                    'cart' => ["Not enough stock for \"{$item->product->name}\" — only {$stock} left."],
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Decrements the actual stock pool for this line item. When it's a
+     * specific variation, that also nudges products.stock back in sync
+     * (see Product::syncStockFromVariations) — otherwise the inventory
+     * table/low-stock filters would keep showing pre-order numbers forever,
+     * since those read products.stock directly and this order never
+     * touches that column on its own.
+     */
+    protected function decrementStock($item): void
+    {
+        if ($item->variation) {
+            $item->variation->decrement('stock', $item->quantity);
+            $item->product->syncStockFromVariations();
+        } else {
+            $item->product->decrement('stock', $item->quantity);
+        }
+    }
+
+    protected function ensureOwnedByBuyer(Request $request, Order $order): void
+    {
+        if ($order->buyer_id !== $request->user()->id) {
             abort(403, 'This order does not belong to you.');
         }
     }

@@ -26,11 +26,7 @@ class Seller extends Model
             return null;
         }
 
-        if (str_starts_with($this->banner_path, 'http://') || str_starts_with($this->banner_path, 'https://')) {
-            return $this->banner_path;
-        }
-
-        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->banner_path);
+        return \App\Support\StorageUrl::for($this->banner_path);
     }
 
     /**
@@ -48,11 +44,7 @@ class Seller extends Model
             return null;
         }
 
-        if (str_starts_with($this->logo_path, 'http://') || str_starts_with($this->logo_path, 'https://')) {
-            return $this->logo_path;
-        }
-
-        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->logo_path);
+        return \App\Support\StorageUrl::for($this->logo_path);
     }
 
     public function user(): BelongsTo

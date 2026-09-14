@@ -26,7 +26,7 @@ class MessageResource extends JsonResource
             'is_unsent' => $isUnsent,
             'attachment' => (! $isUnsent && $this->attachment_path) ? [
                 'type' => $this->attachment_type,
-                'url' => Storage::disk('public')->url($this->attachment_path),
+                'url' => \App\Support\StorageUrl::for($this->attachment_path),
                 'name' => $this->attachment_name,
                 'mime' => $this->attachment_mime,
                 'size' => $this->attachment_size,

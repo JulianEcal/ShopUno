@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Admin\SellerApplicationController as AdminSellerApp
 use App\Http\Controllers\Api\Admin\SettingController;
 use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\Auth\RegistrationController;
 use App\Http\Controllers\Api\Buyer\AddressController;
 use App\Http\Controllers\Api\Buyer\CartController;
@@ -85,7 +86,13 @@ Route::post('/register/buyer', [RegistrationController::class, 'buyer']);
 Route::post('/register/courier', [RegistrationController::class, 'courier']);
 Route::post('/register/logistics', [RegistrationController::class, 'logistics']);
 
-Route::post('/login', [AuthController::class, 'login']);
+// Email OTP gate inside Step 1 of the buyer sign-up wizard — see
+// EmailVerificationController's docblock. Public/unauthenticated: there's
+// no account to authenticate as yet at this point in sign-up.
+Route::post('/email/verification/send', [EmailVerificationController::class, 'send']);
+Route::post('/email/verification/verify', [EmailVerificationController::class, 'verify']);
+
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
